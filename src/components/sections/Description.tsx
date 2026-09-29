@@ -1,10 +1,11 @@
+import StaggerText from "@/components/layout/StaggerText";
 import { rainbowGradient } from "@/lib/gradients";
 
-export default function Description() {
+export default function Description({ index }: { index: number }) {
   return (
     <section
       id="description"
-      className="relative flex min-h-screen w-full items-center overflow-hidden"
+      className="relative flex h-full w-full items-center overflow-hidden"
     >
       <video
         autoPlay
@@ -23,16 +24,23 @@ export default function Description() {
 
       <div className="relative z-10 mx-auto max-w-5xl px-6 text-center sm:px-10">
         <p className="font-heading font-normal leading-[1.1] text-white text-[48px]">
-          Connecting LGBTQ+ professionals and allies across international
-          trade to build a stronger community, expand opportunity, and shape
-          a more inclusive future for
-          <br />
-          <span
-            className="font-script relative -top-11 inline-block bg-clip-text pl-6 pr-1 pt-4 text-[1.6em] leading-normal text-transparent"
-            style={{ backgroundImage: rainbowGradient }}
-          >
-            global commerce
-          </span>
+          <StaggerText
+            index={index}
+            lines={[
+              <span key="line-1">
+                Connecting LGBTQ+ professionals and allies across
+                international trade to build a stronger community, expand
+                opportunity, and shape a more inclusive future for
+              </span>,
+              <span
+                key="global-commerce"
+                className="font-script relative -top-11 inline-block bg-clip-text pl-6 pr-1 pt-4 text-[1.6em] leading-normal text-transparent"
+                style={{ backgroundImage: rainbowGradient }}
+              >
+                global commerce
+              </span>,
+            ]}
+          />
         </p>
       </div>
     </section>
