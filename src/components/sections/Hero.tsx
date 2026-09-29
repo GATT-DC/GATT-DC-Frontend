@@ -1,4 +1,5 @@
 import Navbar from "@/components/layout/Navbar";
+import { rainbowGradient } from "@/lib/gradients";
 
 export default function Hero() {
   return (
@@ -23,10 +24,7 @@ export default function Hero() {
           <span className="block">
             <span
               className="font-script inline-block bg-clip-text px-2 text-[1.5em] text-transparent"
-              style={{
-                backgroundImage:
-                  "linear-gradient(90deg, var(--color-morado) 0%, var(--color-azul) 26%, var(--color-verde) 40%, var(--color-amarillo) 62%, var(--color-naranja) 79%, var(--color-rojo) 100%)",
-              }}
+              style={{ backgroundImage: rainbowGradient }}
             >
               in
             </span>{" "}
