@@ -17,6 +17,18 @@ Reglas de tipografía y color del proyecto. Este documento es la fuente de verda
 - **Tamaño y peso:** no son fijos — varían según el módulo/componente. Ver [Tamaños y pesos por módulo](#tamaños-y-pesos-por-módulo).
 - **Archivo:** ubicar en `src/fonts/PinyonScript-Regular.ttf`.
 - **Licencia:** SIL Open Font License. Permite uso comercial y redistribución sin costo. Ver condiciones completas en el archivo `OFL.txt` que acompaña la descarga (debe conservarse junto a la fuente).
+- **Degradado de color (uso en Hero, palabra "in"):** gradiente lineal horizontal (90°) usando los 6 colores de la paleta arcoíris, en este orden y paradas exactas:
+
+  | Parada | Color     |
+  |--------|-----------|
+  | 0%     | Morado    |
+  | 26%    | Azul      |
+  | 40%    | Verde     |
+  | 62%    | Amarillo  |
+  | 79%    | Naranja   |
+  | 100%   | Rojo      |
+
+  Implementado con las variables CSS del tema (`var(--color-morado)`, etc.) para que se adapte automáticamente entre modo claro/oscuro.
 
 ### PP Radio Grotesk — Títulos
 
@@ -76,6 +88,14 @@ Paleta "arcoiris": 6 colores de acento, sin jerarquía entre ellos (ninguno es "
 | Verde   | `#009948`  | `#23C46F`   |
 | Azul    | `#3E7BE9`  | `#79A9FF`   |
 | Morado  | `#9839FD`  | `#C58FFE`   |
+
+### Color primario (botones / acciones)
+
+| Nombre    | Valor     |
+|-----------|-----------|
+| Primario  | `#1F72FF` |
+
+- **Uso:** botones y elementos de acción (ej. "Become a Member"). Fijo en ambos modos (no tiene variante de modo oscuro) — distinto del azul decorativo de la paleta arcoiris.
 
 - **Uso:** ninguno tiene un rol fijo (no son "primario", "error", "éxito", etc.) — son acentos decorativos intercambiables. Si en el futuro se necesita un color con significado semántico (ej. error de formulario, confirmación de éxito), definirlo aparte y no asumir que corresponde a alguno de estos por su tono.
 - **Modo oscuro:** cada color tiene su propia variante ya definida arriba — no derivar el modo oscuro automáticamente (ej. con opacidad o `filter`), usar el hex exacto de la tabla.

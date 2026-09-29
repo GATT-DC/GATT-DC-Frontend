@@ -1,1 +1,29 @@
 @import "tailwindcss";
+
+@theme {
+  --font-heading: ui-sans-serif, system-ui, "Arial Black", sans-serif; /* TODO: reemplazar por PP Radio Grotesk cuando se compre y se suba a src/fonts/ */
+  --font-script: var(--font-pinyon), cursive;
+  --font-serif: var(--font-fraunces), serif;
+  --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+
+  --color-rojo: #D54954;
+  --color-naranja: #F3652C;
+  --color-amarillo: #FFC700;
+  --color-verde: #009948;
+  --color-azul: #3E7BE9;
+  --color-morado: #9839FD;
+
+  --color-primario: #1F72FF;
+  --color-primario-hover: #154DAD;
+}
+
+@media (prefers-color-scheme: dark) {
+  @theme {
+    --color-rojo: #FA6F7A;
+    --color-naranja: #F47A49;
+    --color-amarillo: #FED440;
+    --color-verde: #23C46F;
+    --color-azul: #79A9FF;
+    --color-morado: #C58FFE;
+  }
+}

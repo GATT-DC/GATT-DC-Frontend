@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# fuentes de prueba (solo uso personal, no licenciadas para produccion)
+# ver docs/style-guide.md seccion "PP Radio Grotesk" — reemplazar por los
+# archivos de la licencia comercial comprada antes de publicar
+src/fonts/RadioGrotesk-Regular.otf
