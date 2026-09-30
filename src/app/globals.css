@@ -15,6 +15,8 @@
 
   --color-primario: #1F72FF;
   --color-primario-hover: #154DAD;
+
+  --color-fondo: #141414; /* fondo general de la landing (modo oscuro por defecto) */
 }
 
 @media (prefers-color-scheme: dark) {

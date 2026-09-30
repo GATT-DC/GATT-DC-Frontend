@@ -74,7 +74,7 @@ Los tamaños y pesos de fuente **no son fijos por tipografía** — cada módulo
 
 | Módulo / componente | Tipografía | Tamaño | Peso |
 |----------------------|------------|--------|------|
-| _(pendiente — se agrega según se van construyendo los módulos)_ | | | |
+| Landing — History (párrafo) | Fraunces | 20px | 300 (light) |
 
 ## Paleta de colores
 
