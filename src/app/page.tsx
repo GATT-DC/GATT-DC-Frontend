@@ -3,6 +3,7 @@ import StackSection from "@/components/layout/StackSection";
 import Description from "@/components/sections/Description";
 import Hero from "@/components/sections/Hero";
 import History from "@/components/sections/History";
+import WhereItAllBegan from "@/components/sections/WhereItAllBegan";
 
 const SECTION_COUNT = 2;
 
@@ -22,6 +23,7 @@ export default function Home() {
         </ScrollPager>
       </div>
       <History />
+      <WhereItAllBegan />
     </main>
   );
 }

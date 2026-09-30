@@ -75,6 +75,8 @@ Los tamaños y pesos de fuente **no son fijos por tipografía** — cada módulo
 | Módulo / componente | Tipografía | Tamaño | Peso |
 |----------------------|------------|--------|------|
 | Landing — History (párrafo) | Fraunces | 20px | 300 (light) |
+| Landing — Where It All Began (título) | PP Radio Grotesk + Pinyon Script ("began", color morado, 1.3em) | 32px / 40px (sm) / 48px (lg) | 400 |
+| Landing — Where It All Began (párrafo) | Fraunces | 18px | 300 (light) |
 
 ## Paleta de colores
 
