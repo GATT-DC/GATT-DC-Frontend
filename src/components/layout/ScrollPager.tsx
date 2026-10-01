@@ -6,6 +6,10 @@ import { ScrollIndexProvider } from "@/components/layout/ScrollContext";
 
 const TRANSITION_LOCK_MS = 700;
 const SWIPE_THRESHOLD_PX = 30;
+// Ventana tras un gesto (rueda, touch, tecla) en la que el scroll se considera
+// provocado por ese gesto. Fuera de ella (p. ej. arrastrando la barra de
+// scroll) no se fuerza ningun enganche.
+const GESTURE_WINDOW_MS = 1000;
 
 export default function ScrollPager({
   sectionCount,
@@ -20,6 +24,7 @@ export default function ScrollPager({
   const touchStartY = useRef<number | null>(null);
   const touchStartedPastPaged = useRef(false);
   const lastScrollY = useRef(0);
+  const lastGestureAt = useRef(0);
 
   useEffect(() => {
     function goToIndex(index: number) {
@@ -47,6 +52,7 @@ export default function ScrollPager({
     }
 
     function handleWheel(e: WheelEvent) {
+      lastGestureAt.current = Date.now();
       // Durante la transicion no se deja pasar scroll nativo: cortaria el
       // scroll suave hacia la seccion destino.
       if (isTransitioning.current) {
@@ -59,14 +65,27 @@ export default function ScrollPager({
       goToIndex(activeIndexRef.current + (goingDown ? 1 : -1));
     }
 
-    // Si el scroll nativo (subiendo desde el contenido libre) cruza el tope
-    // de la ultima seccion paginada, se completa solo el paso a la seccion
-    // anterior para que no quede a medias.
+    // Si el scroll nativo de un gesto (subiendo desde el contenido libre)
+    // cruza el tope de la ultima seccion paginada, se completa solo el paso a
+    // la seccion anterior para que no quede a medias. Sin gesto reciente
+    // (barra de scroll) solo se sincroniza la seccion activa con la posicion.
     function handleScroll() {
       const scrollY = window.scrollY;
       const goingUp = scrollY < lastScrollY.current;
       lastScrollY.current = scrollY;
-      if (isTransitioning.current || !goingUp) return;
+      if (isTransitioning.current) return;
+      if (Date.now() - lastGestureAt.current > GESTURE_WINDOW_MS) {
+        const index = Math.min(
+          sectionCount - 1,
+          Math.round(scrollY / window.innerHeight),
+        );
+        if (index !== activeIndexRef.current) {
+          activeIndexRef.current = index;
+          setActiveIndex(index);
+        }
+        return;
+      }
+      if (!goingUp) return;
       const onLast = activeIndexRef.current === sectionCount - 1;
       const pagedEnd = (sectionCount - 1) * window.innerHeight;
       if (onLast && scrollY < pagedEnd - 1) {
@@ -75,12 +94,14 @@ export default function ScrollPager({
     }
 
     function handleTouchStart(e: TouchEvent) {
+      lastGestureAt.current = Date.now();
       touchStartY.current = e.touches[0].clientY;
       touchStartedPastPaged.current = isPastPaged();
     }
 
     function handleTouchMove(e: TouchEvent) {
       if (touchStartY.current === null) return;
+      lastGestureAt.current = Date.now();
       if (isTransitioning.current) {
         e.preventDefault();
         return;
@@ -102,6 +123,7 @@ export default function ScrollPager({
     function handleKeyDown(e: KeyboardEvent) {
       const goingDown = e.key === "ArrowDown" || e.key === "PageDown";
       const goingUp = e.key === "ArrowUp" || e.key === "PageUp";
+      if (goingDown || goingUp) lastGestureAt.current = Date.now();
       if (isTransitioning.current) {
         if (goingDown || goingUp) e.preventDefault();
         return;
