@@ -3,17 +3,21 @@
 import type { ReactNode } from "react";
 import { useActiveIndex } from "@/components/layout/ScrollContext";
 
+// Se activa cuando la seccion `index` es la activa del ScrollPager, o con
+// `active` directamente para secciones fuera del pager.
 export default function StaggerText({
   lines,
   index,
+  active: activeProp,
   className = "",
 }: {
   lines: ReactNode[];
-  index: number;
+  index?: number;
+  active?: boolean;
   className?: string;
 }) {
   const activeIndex = useActiveIndex();
-  const active = activeIndex === index;
+  const active = activeProp ?? activeIndex === index;
 
   return (
     <span className={className}>
