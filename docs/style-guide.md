@@ -77,6 +77,11 @@ Los tamaños y pesos de fuente **no son fijos por tipografía** — cada módulo
 | Landing — History (párrafo) | Fraunces | 20px | 300 (light) |
 | Landing — Where It All Began (título) | PP Radio Grotesk + Pinyon Script ("began", color morado, 1.3em) | 32px / 40px (sm) / 48px (lg) | 400 |
 | Landing — Where It All Began (párrafo) | Fraunces | 18px | 300 (light) |
+| Landing — Discover GATT (título vertical) | PP Radio Grotesk + Pinyon Script ("gatt", 1.3em) | 48px / 72px (lg) | 400 |
+| Landing — Discover GATT (pestañas de carpeta) | PP Radio Grotesk + Pinyon Script (1.3em), color de la paleta por carpeta | 18px / 22px (lg) | 400 |
+| Landing — Discover GATT (párrafo carpeta About us) | Fraunces | 17px / 19px (lg) | 300 (light) |
+| Landing — About us abierto (título) | PP Radio Grotesk + Pinyon Script ("us", 1.3em) | 40px / 48px (lg) | 400 |
+| Landing — About us abierto (párrafos) | Fraunces | 17px / 18px (lg) | 300 (light) |
 
 ## Paleta de colores
 
