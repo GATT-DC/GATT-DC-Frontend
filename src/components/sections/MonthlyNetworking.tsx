@@ -67,12 +67,15 @@ export default function MonthlyNetworking() {
               mixer
             </span>
           </h2>
-          <p className="mt-10 max-w-[480px] font-serif text-[17px] font-light leading-[1.3] text-white lg:mt-14 lg:text-[19px]">
+          <p className="mt-6 pl-1 font-ui text-[14px] tracking-[0.12em] text-verde lg:mt-8">
+            WASHINGTON D.C.
+          </p>
+          <p className="mt-6 max-w-[480px] font-serif text-[17px] font-light leading-[1.3] text-white lg:mt-8 lg:text-[19px]">
             Join GATT this September for an evening of networking,
             conversation, and connection with professionals across the
             international trade community.
           </p>
-          <div className="mt-10 flex flex-col items-start gap-5">
+          <div className="mt-10 flex items-start">
             <a
               href="#registration"
               className="flex items-center gap-2 rounded-full bg-primario px-5 py-2.5 font-ui text-[16px] text-white transition-colors hover:bg-primario-hover"
@@ -92,9 +95,6 @@ export default function MonthlyNetworking() {
                 <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3" />
               </svg>
             </a>
-            <span className="pl-4 font-ui text-[14px] tracking-[0.12em] text-verde">
-              WASHINGTON D.C.
-            </span>
           </div>
         </div>
 
