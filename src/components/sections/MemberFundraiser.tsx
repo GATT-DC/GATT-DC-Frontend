@@ -1,6 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import Marquee from "@/components/layout/Marquee";
 
 // Avance de la recaudacion (0 a 100): el arco se rellena hasta aqui.
 const PROGRESS = 50;
@@ -21,6 +23,22 @@ const TIERS = [
   { name: "Gold", amount: "$5,000", color: "var(--color-amarillo)" },
   { name: "Bronze", amount: "$1,500", color: "#d9925f" },
   { name: "Silver", amount: "$3,000", color: "#8c8c8c" },
+];
+
+// Logos de los patrocinadores (carrusel infinito). 1.png es Barnes & Thornburg
+// con letras negras (no se ve sobre el fondo oscuro), asi que se usa la
+// version clara (2.png). Falta el logo de BakerHostetler.
+const SPONSORS = [
+  { logo: "2.png", name: "Barnes & Thornburg LLP" },
+  { logo: "3.png", name: "Steptoe" },
+  { logo: "4.png", name: "Cassidy Levy Kent" },
+];
+
+// Novedades de la franja naranja (se desplaza en bucle).
+const NEWS = [
+  "300+ Active Members",
+  "5 New Members This Month",
+  "Welcome, New Members!",
 ];
 
 const FILL_TRANSITION =
@@ -199,6 +217,39 @@ export default function MemberFundraiser() {
           </p>
           <p>All donations to GATT DC are tax deductible.</p>
         </div>
+      </div>
+
+      {/* Patrocinadores y novedades: ocupan todo el ancho de la seccion. En
+          lg el padding de la seccion es 8% de su ancho, que equivale a
+          8/0.84 del ancho del contenido. */}
+      <div className="-mx-6 mt-20 sm:-mx-10 lg:-mx-[9.5238%] lg:mt-28">
+        <Marquee speed={45} className="py-4">
+          {SPONSORS.map((sponsor) => (
+            <Image
+              key={sponsor.logo}
+              src={`/images/landing/member-fundraiser/${sponsor.logo}`}
+              alt={sponsor.name}
+              width={5535}
+              height={1845}
+              sizes="300px"
+              className="mx-10 h-auto w-[220px] lg:mx-14 lg:w-[280px]"
+            />
+          ))}
+        </Marquee>
+
+        <Marquee speed={85} className="mt-12 bg-naranja py-1.5">
+          {NEWS.map((item) => (
+            <span
+              key={item}
+              className="font-heading flex items-center whitespace-nowrap text-[18px] text-white lg:text-[20px]"
+            >
+              <span className="px-8">{item}</span>
+              <span aria-hidden="true" className="text-white/80">
+                ·
+              </span>
+            </span>
+          ))}
+        </Marquee>
       </div>
     </section>
   );

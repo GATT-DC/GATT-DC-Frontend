@@ -29,3 +29,14 @@
     --color-morado: #C58FFE;
   }
 }
+
+/* Carrusel infinito (componente Marquee): la pista contiene el contenido dos
+   veces, asi que desplazarla la mitad de su ancho da un bucle sin saltos. */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}

@@ -96,6 +96,7 @@ Los tamaños y pesos de fuente **no son fijos por tipografía** — cada módulo
 | Landing — Member Fundraiser (texto curvo del anillo) | PP Radio Grotesk | 27 unidades del SVG (escala con el anillo) | 400 |
 | Landing — Member Fundraiser (título patrocinio) | PP Radio Grotesk | 22px / 26px (lg) | 400 |
 | Landing — Niveles de patrocinio (nombre / monto / descripción) | PP Radio Grotesk / PP Radio Grotesk / Fraunces | 20px / 17px / 14px | 400 / 400 / 300 |
+| Landing — Franja de novedades (carrusel naranja) | PP Radio Grotesk | 18px / 20px (lg) | 400 |
 
 ## Paleta de colores
 
