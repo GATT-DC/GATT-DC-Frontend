@@ -61,7 +61,7 @@ export default function Footer() {
 
         <Link href="/" className="order-1 justify-self-center sm:order-none">
           <Image
-            src="/images/landing/hero/logo-gatt.png"
+            src="/images/landing/hero/Logo-gatt.png"
             alt="GATT DC"
             width={120}
             height={36}
