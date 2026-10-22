@@ -82,6 +82,8 @@ Los tamaños y pesos de fuente **no son fijos por tipografía** — cada módulo
 | Landing — Discover GATT (párrafo carpeta About us) | Fraunces | 17px / 19px (lg) | 300 (light) |
 | Landing — About us abierto (título) | PP Radio Grotesk + Pinyon Script ("us", 1.3em) | 40px / 48px (lg) | 400 |
 | Landing — About us abierto (párrafos) | Fraunces | 17px / 18px (lg) | 300 (light) |
+| Landing — Comments (cita) | Fraunces | 15px / clamp(14px, 1.2vw, 18px) (lg) | 300 (light) |
+| Landing — Comments (autor) | Pinyon Script | 18px / clamp(16px, 1.4vw, 22px) (lg) | 400 |
 
 ## Paleta de colores
 

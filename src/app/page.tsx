@@ -1,5 +1,6 @@
 import ScrollPager from "@/components/layout/ScrollPager";
 import StackSection from "@/components/layout/StackSection";
+import Comments from "@/components/sections/Comments";
 import Description from "@/components/sections/Description";
 import DiscoverGatt from "@/components/sections/DiscoverGatt";
 import Hero from "@/components/sections/Hero";
@@ -26,6 +27,7 @@ export default function Home() {
       <History />
       <WhereItAllBegan />
       <DiscoverGatt />
+      <Comments />
     </main>
   );
 }
