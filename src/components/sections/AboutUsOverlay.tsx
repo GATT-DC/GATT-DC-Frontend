@@ -1,12 +1,18 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useRef } from "react";
+import { useRef } from "react";
 import type { RefObject } from "react";
 import FolderTab from "@/components/layout/FolderTab";
 import Navbar from "@/components/layout/Navbar";
 import Paperclip from "@/components/layout/Paperclip";
 import PaperTexture from "@/components/layout/PaperTexture";
 import PhotoPlaceholder from "@/components/layout/PhotoPlaceholder";
+import {
+  FOLDER_EASE,
+  placeAt,
+  useFolderSequence,
+  type FolderStep,
+} from "@/components/layout/useFolderSequence";
 
 // Tono de la carpeta abierta segun el mockup (mas oscuro que el azul de la
 // paleta, que se usa en el borde y la pestaña).
@@ -33,38 +39,9 @@ export type FolderOrigin = {
   photo: RefObject<HTMLDivElement | null>;
 };
 
-type Step = {
-  el: HTMLElement;
-  keyframes: Keyframe[];
-  start: number;
-  duration: number;
-  easing?: string;
-};
-
 // Duracion total de la secuencia de apertura (el cierre la recorre al reves).
 const TOTAL_MS = 1400;
-const EASE = "cubic-bezier(0.65, 0, 0.35, 1)";
 const LIFT_PX = 24;
-
-function playSteps(steps: Step[], reverse: boolean, speed: number) {
-  return steps.map((step) =>
-    step.el.animate(step.keyframes, {
-      delay:
-        (reverse ? TOTAL_MS - step.start - step.duration : step.start) * speed,
-      duration: step.duration * speed,
-      easing: step.easing ?? EASE,
-      fill: "both",
-      direction: reverse ? "reverse" : "normal",
-    }),
-  );
-}
-
-function placeAt(el: HTMLElement, rect: DOMRect) {
-  el.style.left = `${rect.left}px`;
-  el.style.top = `${rect.top}px`;
-  el.style.width = `${rect.width}px`;
-  el.style.height = `${rect.height}px`;
-}
 
 export default function AboutUsOverlay({
   open,
@@ -88,217 +65,175 @@ export default function AboutUsOverlay({
   const tabCloneRef = useRef<HTMLDivElement>(null);
   const photoCloneRef = useRef<HTMLDivElement>(null);
 
-  const stepsRef = useRef<Step[]>([]);
-  const animationsRef = useRef<Animation[]>([]);
-  const closingRef = useRef(false);
-  const speedRef = useRef(1);
-
   // Apertura (FLIP): con el layout final ya renderizado se mide la carpeta
   // del stack y la vista abierta, y antes del primer pintado se arranca la
   // secuencia desde la posicion de la carpeta cerrada.
-  useLayoutEffect(() => {
-    if (!open) return;
-    const body = origin.body.current;
-    const sheet = origin.sheet.current;
-    const tab = origin.tab.current;
-    const photo = origin.photo.current;
-    const backdrop = backdropRef.current;
-    const nav = navRef.current;
-    const panel = panelRef.current;
-    const panelFill = panelFillRef.current;
-    const text = textRef.current;
-    const photo1 = photo1Ref.current;
-    const photo2 = photo2Ref.current;
-    const closeTab = closeRef.current;
-    const clip = clipRef.current;
-    const coverClone = coverCloneRef.current;
-    const tabClone = tabCloneRef.current;
-    const photoClone = photoCloneRef.current;
-    if (
-      !body || !sheet || !tab || !photo || !backdrop || !nav || !panel || !panelFill ||
-      !text || !photo1 || !photo2 || !closeTab || !clip || !coverClone ||
-      !tabClone || !photoClone
-    ) {
-      return;
-    }
+  const requestClose = useFolderSequence({
+    open,
+    onClose,
+    totalMs: TOTAL_MS,
+    closeRef,
+    returnFocusRef: origin.tab,
+    buildSteps: () => {
+      const body = origin.body.current;
+      const sheet = origin.sheet.current;
+      const tab = origin.tab.current;
+      const photo = origin.photo.current;
+      const backdrop = backdropRef.current;
+      const nav = navRef.current;
+      const panel = panelRef.current;
+      const panelFill = panelFillRef.current;
+      const text = textRef.current;
+      const photo1 = photo1Ref.current;
+      const photo2 = photo2Ref.current;
+      const closeTab = closeRef.current;
+      const clip = clipRef.current;
+      const coverClone = coverCloneRef.current;
+      const tabClone = tabCloneRef.current;
+      const photoClone = photoCloneRef.current;
+      if (
+        !body || !sheet || !tab || !photo || !backdrop || !nav || !panel || !panelFill ||
+        !text || !photo1 || !photo2 || !closeTab || !clip || !coverClone ||
+        !tabClone || !photoClone
+      ) {
+        return null;
+      }
 
-    closingRef.current = false;
-    speedRef.current = window.matchMedia("(prefers-reduced-motion: reduce)")
-      .matches
-      ? 0.01
-      : 1;
+      // Cuerpo de la carpeta -> panel abierto.
+      const first = body.getBoundingClientRect();
+      const last = panel.getBoundingClientRect();
+      const tx = first.left - last.left;
+      const ty = first.top - last.top;
+      const scale = `scale(${first.width / last.width}, ${first.height / last.height})`;
 
-    // Cuerpo de la carpeta -> panel abierto.
-    const first = body.getBoundingClientRect();
-    const last = panel.getBoundingClientRect();
-    const tx = first.left - last.left;
-    const ty = first.top - last.top;
-    const scale = `scale(${first.width / last.width}, ${first.height / last.height})`;
+      // Las copias (tapa, pestaña horizontal y foto) arrancan exactamente donde
+      // estan en el stack.
+      placeAt(coverClone, sheet.getBoundingClientRect());
+      placeAt(tabClone, tab.getBoundingClientRect());
+      const photoLast = photo1.getBoundingClientRect();
+      placeAt(photoClone, photoLast);
+      const photoFirst = photo.getBoundingClientRect();
+      const dx =
+        photoFirst.left + photoFirst.width / 2 - (photoLast.left + photoLast.width / 2);
+      const dy =
+        photoFirst.top + photoFirst.height / 2 - (photoLast.top + photoLast.height / 2);
+      const photoScale = `scale(${photo.offsetWidth / photoLast.width}, ${photo.offsetHeight / photoLast.height})`;
 
-    // Las copias (tapa, pestaña horizontal y foto) arrancan exactamente donde
-    // estan en el stack.
-    placeAt(coverClone, sheet.getBoundingClientRect());
-    placeAt(tabClone, tab.getBoundingClientRect());
-    const photoLast = photo1.getBoundingClientRect();
-    placeAt(photoClone, photoLast);
-    const photoFirst = photo.getBoundingClientRect();
-    const dx =
-      photoFirst.left + photoFirst.width / 2 - (photoLast.left + photoLast.width / 2);
-    const dy =
-      photoFirst.top + photoFirst.height / 2 - (photoLast.top + photoLast.height / 2);
-    const photoScale = `scale(${photo.offsetWidth / photoLast.width}, ${photo.offsetHeight / photoLast.height})`;
+      // El interior arranca con el azul de la carpeta cerrada.
+      const folderColor = getComputedStyle(body).backgroundColor;
 
-    // El interior arranca con el azul de la carpeta cerrada.
-    const folderColor = getComputedStyle(body).backgroundColor;
+      const steps: FolderStep[] = [
+        // 1. La carpeta se levanta del stack y crece hasta la vista abierta.
+        {
+          el: panel,
+          keyframes: [
+            { transform: `translate(${tx}px, ${ty}px) ${scale}` },
+            { transform: `translate(${tx}px, ${ty - LIFT_PX}px) ${scale}`, offset: 0.25 },
+            { transform: "none" },
+          ],
+          start: 0,
+          duration: 1100,
+        },
+        {
+          el: panelFill,
+          keyframes: [
+            { backgroundColor: folderColor },
+            { backgroundColor: folderColor, offset: 0.3 },
+            { backgroundColor: OPEN_FOLDER_COLOR },
+          ],
+          start: 0,
+          duration: 1000,
+        },
+        // 2. La tapa se dobla hacia el frente desde su borde inferior.
+        {
+          el: coverClone,
+          keyframes: [
+            { transform: "perspective(1400px) translateY(0) rotateX(0deg)", opacity: 1 },
+            { transform: `perspective(1400px) translateY(-${LIFT_PX}px) rotateX(-55deg)`, opacity: 1, offset: 0.55 },
+            { transform: `perspective(1400px) translateY(-${LIFT_PX}px) rotateX(-100deg)`, opacity: 0 },
+          ],
+          start: 0,
+          duration: 600,
+          easing: "cubic-bezier(0.45, 0, 0.75, 0.4)",
+        },
+        // La pestaña horizontal acompaña la esquina de la carpeta y se desvanece.
+        {
+          el: tabClone,
+          keyframes: [
+            { transform: "translate(0, 0)", opacity: 1 },
+            { transform: `translate(0, -${LIFT_PX}px)`, opacity: 1, offset: 0.25 },
+            { transform: `translate(${-tx * 0.5}px, ${-ty * 0.5}px)`, opacity: 0, offset: 0.6 },
+            { transform: `translate(${-tx}px, ${-ty}px)`, opacity: 0 },
+          ],
+          start: 0,
+          duration: 1100,
+        },
+        // 3. La foto sale de la carpeta, se endereza y va a su lugar.
+        {
+          el: photoClone,
+          keyframes: [
+            { transform: `translate(${dx}px, ${dy}px) rotate(-12deg) ${photoScale}`, opacity: 1, easing: "ease-out" },
+            { transform: `translate(${dx}px, ${dy - LIFT_PX * 2}px) rotate(-8deg) ${photoScale}`, opacity: 1, offset: 0.25, easing: FOLDER_EASE },
+            { transform: "none", opacity: 1, offset: 0.98 },
+            { transform: "none", opacity: 0 },
+          ],
+          start: 150,
+          duration: 1050,
+          // El easing va por tramo para que el cambio final a la foto real ocurra
+          // justo al terminar.
+          easing: "linear",
+        },
+        {
+          el: photo1,
+          keyframes: [{ opacity: 0 }, { opacity: 0, offset: 0.98 }, { opacity: 1 }],
+          start: 150,
+          duration: 1050,
+          easing: "linear",
+        },
+        { el: backdrop, keyframes: [{ opacity: 0 }, { opacity: 1 }], start: 250, duration: 500 },
+        { el: nav, keyframes: [{ opacity: 0 }, { opacity: 1 }], start: 700, duration: 400 },
+        // 4. Aparece el contenido.
+        {
+          el: text,
+          keyframes: [
+            { opacity: 0, transform: "translateY(20px)" },
+            { opacity: 1, transform: "none" },
+          ],
+          start: 950,
+          duration: 450,
+        },
+        {
+          el: photo2,
+          keyframes: [
+            { opacity: 0, transform: "translateY(20px)" },
+            { opacity: 1, transform: "none" },
+          ],
+          start: 1000,
+          duration: 400,
+        },
+        {
+          el: closeTab,
+          keyframes: [
+            { opacity: 0, transform: "translateX(-24px)" },
+            { opacity: 1, transform: "none" },
+          ],
+          start: 950,
+          duration: 350,
+        },
+        {
+          el: clip,
+          keyframes: [
+            { opacity: 0, transform: "translateY(-12px)" },
+            { opacity: 1, transform: "none" },
+          ],
+          start: 1050,
+          duration: 350,
+        },
+      ];
 
-    const steps: Step[] = [
-      // 1. La carpeta se levanta del stack y crece hasta la vista abierta.
-      {
-        el: panel,
-        keyframes: [
-          { transform: `translate(${tx}px, ${ty}px) ${scale}` },
-          { transform: `translate(${tx}px, ${ty - LIFT_PX}px) ${scale}`, offset: 0.25 },
-          { transform: "none" },
-        ],
-        start: 0,
-        duration: 1100,
-      },
-      {
-        el: panelFill,
-        keyframes: [
-          { backgroundColor: folderColor },
-          { backgroundColor: folderColor, offset: 0.3 },
-          { backgroundColor: OPEN_FOLDER_COLOR },
-        ],
-        start: 0,
-        duration: 1000,
-      },
-      // 2. La tapa se dobla hacia el frente desde su borde inferior.
-      {
-        el: coverClone,
-        keyframes: [
-          { transform: "perspective(1400px) translateY(0) rotateX(0deg)", opacity: 1 },
-          { transform: `perspective(1400px) translateY(-${LIFT_PX}px) rotateX(-55deg)`, opacity: 1, offset: 0.55 },
-          { transform: `perspective(1400px) translateY(-${LIFT_PX}px) rotateX(-100deg)`, opacity: 0 },
-        ],
-        start: 0,
-        duration: 600,
-        easing: "cubic-bezier(0.45, 0, 0.75, 0.4)",
-      },
-      // La pestaña horizontal acompaña la esquina de la carpeta y se desvanece.
-      {
-        el: tabClone,
-        keyframes: [
-          { transform: "translate(0, 0)", opacity: 1 },
-          { transform: `translate(0, -${LIFT_PX}px)`, opacity: 1, offset: 0.25 },
-          { transform: `translate(${-tx * 0.5}px, ${-ty * 0.5}px)`, opacity: 0, offset: 0.6 },
-          { transform: `translate(${-tx}px, ${-ty}px)`, opacity: 0 },
-        ],
-        start: 0,
-        duration: 1100,
-      },
-      // 3. La foto sale de la carpeta, se endereza y va a su lugar.
-      {
-        el: photoClone,
-        keyframes: [
-          { transform: `translate(${dx}px, ${dy}px) rotate(-12deg) ${photoScale}`, opacity: 1, easing: "ease-out" },
-          { transform: `translate(${dx}px, ${dy - LIFT_PX * 2}px) rotate(-8deg) ${photoScale}`, opacity: 1, offset: 0.25, easing: EASE },
-          { transform: "none", opacity: 1, offset: 0.98 },
-          { transform: "none", opacity: 0 },
-        ],
-        start: 150,
-        duration: 1050,
-        // El easing va por tramo para que el cambio final a la foto real ocurra
-        // justo al terminar.
-        easing: "linear",
-      },
-      {
-        el: photo1,
-        keyframes: [{ opacity: 0 }, { opacity: 0, offset: 0.98 }, { opacity: 1 }],
-        start: 150,
-        duration: 1050,
-        easing: "linear",
-      },
-      { el: backdrop, keyframes: [{ opacity: 0 }, { opacity: 1 }], start: 250, duration: 500 },
-      { el: nav, keyframes: [{ opacity: 0 }, { opacity: 1 }], start: 700, duration: 400 },
-      // 4. Aparece el contenido.
-      {
-        el: text,
-        keyframes: [
-          { opacity: 0, transform: "translateY(20px)" },
-          { opacity: 1, transform: "none" },
-        ],
-        start: 950,
-        duration: 450,
-      },
-      {
-        el: photo2,
-        keyframes: [
-          { opacity: 0, transform: "translateY(20px)" },
-          { opacity: 1, transform: "none" },
-        ],
-        start: 1000,
-        duration: 400,
-      },
-      {
-        el: closeTab,
-        keyframes: [
-          { opacity: 0, transform: "translateX(-24px)" },
-          { opacity: 1, transform: "none" },
-        ],
-        start: 950,
-        duration: 350,
-      },
-      {
-        el: clip,
-        keyframes: [
-          { opacity: 0, transform: "translateY(-12px)" },
-          { opacity: 1, transform: "none" },
-        ],
-        start: 1050,
-        duration: 350,
-      },
-    ];
-
-    stepsRef.current = steps;
-    animationsRef.current = playSteps(steps, false, speedRef.current);
-    return () => animationsRef.current.forEach((a) => a.cancel());
-  }, [open, origin]);
-
-  // Cierre: la misma secuencia al reves; al terminar la carpeta del stack
-  // vuelve a mostrarse en su lugar.
-  const requestClose = useCallback(() => {
-    if (closingRef.current) return;
-    closingRef.current = true;
-    animationsRef.current.forEach((a) => a.cancel());
-    const animations = playSteps(stepsRef.current, true, speedRef.current);
-    animationsRef.current = animations;
-    Promise.all(animations.map((a) => a.finished))
-      .then(onClose)
-      .catch(() => {});
-  }, [onClose]);
-
-  // Mientras esta abierta: bloquea el scroll de la pagina, cierra con Esc y
-  // mueve el foco a la pestaña (que es el boton de cerrar).
-  useEffect(() => {
-    if (!open) return;
-    const returnTo = origin.tab.current;
-    const root = document.documentElement;
-    const previousOverflow = root.style.overflow;
-    root.style.overflow = "hidden";
-    closeRef.current?.focus();
-
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") requestClose();
-    }
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      root.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", handleKeyDown);
-      returnTo?.focus();
-    };
-  }, [open, origin, requestClose]);
+      return steps;
+    },
+  });
 
   if (!open) return null;
 
