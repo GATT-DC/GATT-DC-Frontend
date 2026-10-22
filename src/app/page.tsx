@@ -1,9 +1,10 @@
+import Footer from "@/components/layout/Footer";
+import Navbar from "@/components/layout/Navbar";
 import ScrollPager from "@/components/layout/ScrollPager";
 import StackSection from "@/components/layout/StackSection";
 import Comments from "@/components/sections/Comments";
 import Description from "@/components/sections/Description";
 import DiscoverGatt from "@/components/sections/DiscoverGatt";
-import Footer from "@/components/layout/Footer";
 import Hero from "@/components/sections/Hero";
 import History from "@/components/sections/History";
 import JoinCommunity from "@/components/sections/JoinCommunity";
@@ -16,6 +17,7 @@ const SECTION_COUNT = 2;
 export default function Home() {
   return (
     <>
+      <Navbar />
       <main>
         {/* Contenedor propio para que las secciones sticky se liberen al
             terminar el paginado y el contenido siguiente quede debajo. */}

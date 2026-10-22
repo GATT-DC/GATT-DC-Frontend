@@ -88,190 +88,81 @@ const IMAGE_WIDTH = "lg:w-[min(72vw,120vh)]";
 // Separacion horizontal entre slides mientras se desplazan.
 const SLIDE_GAP_PX = 160;
 
-// Duracion de la transicion entre slides (easing in-out senoidal: sin picos
-// de velocidad a mitad de camino).
-const STEP_DURATION_MS = 850;
-const SWIPE_THRESHOLD_PX = 30;
-// Sin un gesto (rueda, touch, tecla) en esta ventana, el scroll viene de la
-// barra de scroll y no se fuerza ningun enganche.
-const GESTURE_WINDOW_MS = 1000;
+// Recorrido vertical por cada transicion entre slides (mas alto = mas lento).
+const SLIDE_SCROLL_VH = 1.65;
+// Fraccion de cada tramo en la que el slide se queda quieto antes de cruzar.
+const SLIDE_HOLD = 0.32;
+// Interpolacion del desplazamiento horizontal (1 = sigue el scroll al instante).
+const LERP = 0.12;
+
+function smoothstep(t: number) {
+  return t * t * (3 - 2 * t);
+}
+
+// Convierte el progreso 0..1 del scroll en un indice 0..last, con pausa en
+// cada slide y cruce suave (sin saltos ni snap).
+function slideOffset(progress: number, last: number) {
+  const x = progress * last;
+  const index = Math.min(last, Math.floor(x));
+  if (index >= last) return last;
+  const local = x - index;
+  if (local <= SLIDE_HOLD) return index;
+  return index + smoothstep((local - SLIDE_HOLD) / (1 - SLIDE_HOLD));
+}
 
 export default function WhereItAllBegan() {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
 
-  // El scroll vertical dentro del contenedor alto se traduce en
-  // desplazamiento horizontal de los slides y en el avance de la barra.
+  // El scroll vertical nativo mueve los slides en horizontal, interpolado
+  // para que el cruce no vaya atado 1:1 al gesto.
   useEffect(() => {
+    const last = SLIDES.length - 1;
+    let current = 0;
+    let target = 0;
     let frame = 0;
 
-    function update() {
-      frame = 0;
+    function measure() {
       const wrapper = wrapperRef.current;
-      const track = trackRef.current;
-      const bar = barRef.current;
-      if (!wrapper || !track || !bar) return;
+      if (!wrapper) return;
       const rect = wrapper.getBoundingClientRect();
       const scrollable = rect.height - window.innerHeight;
       const progress =
         scrollable > 0 ? Math.min(1, Math.max(0, -rect.top / scrollable)) : 0;
-      const last = SLIDES.length - 1;
+      target = slideOffset(progress, last);
+    }
+
+    function apply(offset: number) {
+      const wrapper = wrapperRef.current;
+      const track = trackRef.current;
+      const bar = barRef.current;
+      if (!wrapper || !track || !bar) return;
       const step = wrapper.clientWidth + SLIDE_GAP_PX;
-      track.style.transform = `translate3d(${-progress * last * step}px, 0, 0)`;
-      bar.style.width = `${((1 + progress * last) / SLIDES.length) * 100}%`;
+      track.style.transform = `translate3d(${-offset * step}px, 0, 0)`;
+      bar.style.width = `${((1 + offset) / SLIDES.length) * 100}%`;
     }
 
-    function requestUpdate() {
-      if (!frame) frame = requestAnimationFrame(update);
+    function tick() {
+      current += (target - current) * LERP;
+      if (Math.abs(target - current) < 0.0008) current = target;
+      apply(current);
+      frame = current === target ? 0 : requestAnimationFrame(tick);
     }
 
-    update();
-    window.addEventListener("scroll", requestUpdate, { passive: true });
-    window.addEventListener("resize", requestUpdate);
+    function requestTick() {
+      measure();
+      if (!frame) frame = requestAnimationFrame(tick);
+    }
+
+    measure();
+    apply(target);
+    window.addEventListener("scroll", requestTick, { passive: true });
+    window.addEventListener("resize", requestTick);
     return () => {
       cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", requestUpdate);
-      window.removeEventListener("resize", requestUpdate);
-    };
-  }, []);
-
-  // Avance por pasos: dentro de la seccion cada gesto (rueda, swipe o tecla)
-  // lleva al slide siguiente/anterior con scroll suave, sin quedar a medias.
-  // En el primer slide hacia arriba y en el ultimo hacia abajo se libera el
-  // scroll nativo para salir de la seccion.
-  useEffect(() => {
-    const last = SLIDES.length - 1;
-    let locked = false;
-    let lastScrollY = window.scrollY;
-    let touchStartY: number | null = null;
-    let lastGestureAt = 0;
-    let animationFrame = 0;
-
-    function bounds() {
-      const wrapper = wrapperRef.current;
-      if (!wrapper) return null;
-      const top = wrapper.getBoundingClientRect().top + window.scrollY;
-      const vh = window.innerHeight;
-      return { top, vh, end: top + last * vh };
-    }
-
-    // Scroll animado propio: scrollTo "smooth" no permite fijar la duracion.
-    function goToStep(step: number) {
-      const b = bounds();
-      if (!b) return;
-      locked = true;
-      cancelAnimationFrame(animationFrame);
-      const from = window.scrollY;
-      const to = b.top + step * b.vh;
-      const start = performance.now();
-
-      function tick(now: number) {
-        const t = Math.min(1, (now - start) / STEP_DURATION_MS);
-        const eased = -(Math.cos(Math.PI * t) - 1) / 2;
-        window.scrollTo(0, from + (to - from) * eased);
-        if (t < 1) {
-          animationFrame = requestAnimationFrame(tick);
-        } else {
-          locked = false;
-        }
-      }
-
-      animationFrame = requestAnimationFrame(tick);
-    }
-
-    // Devuelve el paso destino, o null si el gesto debe usar scroll nativo.
-    function nextStep(goingDown: boolean) {
-      const b = bounds();
-      if (!b) return null;
-      const y = window.scrollY;
-      if (y < b.top - 1 || y > b.end + 1) return null;
-      const current = Math.round((y - b.top) / b.vh);
-      if (goingDown && current >= last) return null;
-      if (!goingDown && current <= 0) return null;
-      return current + (goingDown ? 1 : -1);
-    }
-
-    function handleWheel(e: WheelEvent) {
-      lastGestureAt = Date.now();
-      if (locked) {
-        e.preventDefault();
-        return;
-      }
-      const step = nextStep(e.deltaY > 0);
-      if (step === null) return;
-      e.preventDefault();
-      goToStep(step);
-    }
-
-    // Si el scroll nativo de un gesto entra a la seccion (con inercia), se
-    // engancha en el primer slide al llegar desde arriba o en el ultimo desde
-    // abajo. Arrastrando la barra de scroll no se engancha nada.
-    function handleScroll() {
-      const y = window.scrollY;
-      const prev = lastScrollY;
-      lastScrollY = y;
-      if (locked || Date.now() - lastGestureAt > GESTURE_WINDOW_MS) return;
-      const b = bounds();
-      if (!b) return;
-      if (prev < b.top - 1 && y > b.top + 1) goToStep(0);
-      else if (prev > b.end + 1 && y < b.end - 1) goToStep(last);
-    }
-
-    function handleTouchStart(e: TouchEvent) {
-      lastGestureAt = Date.now();
-      touchStartY = e.touches[0].clientY;
-    }
-
-    function handleTouchMove(e: TouchEvent) {
-      if (touchStartY === null) return;
-      lastGestureAt = Date.now();
-      if (locked) {
-        e.preventDefault();
-        return;
-      }
-      const goingDown = touchStartY - e.touches[0].clientY > 0;
-      if (nextStep(goingDown) !== null) e.preventDefault();
-    }
-
-    function handleTouchEnd(e: TouchEvent) {
-      if (touchStartY === null) return;
-      const deltaY = touchStartY - e.changedTouches[0].clientY;
-      touchStartY = null;
-      if (locked || Math.abs(deltaY) < SWIPE_THRESHOLD_PX) return;
-      const step = nextStep(deltaY > 0);
-      if (step !== null) goToStep(step);
-    }
-
-    function handleKeyDown(e: KeyboardEvent) {
-      const goingDown = e.key === "ArrowDown" || e.key === "PageDown";
-      const goingUp = e.key === "ArrowUp" || e.key === "PageUp";
-      if (!goingDown && !goingUp) return;
-      lastGestureAt = Date.now();
-      if (locked) {
-        e.preventDefault();
-        return;
-      }
-      const step = nextStep(goingDown);
-      if (step === null) return;
-      e.preventDefault();
-      goToStep(step);
-    }
-
-    window.addEventListener("wheel", handleWheel, { passive: false });
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    window.addEventListener("touchstart", handleTouchStart, { passive: true });
-    window.addEventListener("touchmove", handleTouchMove, { passive: false });
-    window.addEventListener("touchend", handleTouchEnd);
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      cancelAnimationFrame(animationFrame);
-      window.removeEventListener("wheel", handleWheel);
-      window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("touchstart", handleTouchStart);
-      window.removeEventListener("touchmove", handleTouchMove);
-      window.removeEventListener("touchend", handleTouchEnd);
-      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("scroll", requestTick);
+      window.removeEventListener("resize", requestTick);
     };
   }, []);
 
@@ -280,7 +171,7 @@ export default function WhereItAllBegan() {
       id="where-it-all-began"
       ref={wrapperRef}
       className="relative bg-fondo"
-      style={{ height: `${SLIDES.length * 100}vh` }}
+      style={{ height: `${(1 + (SLIDES.length - 1) * SLIDE_SCROLL_VH) * 100}vh` }}
     >
       <div className="sticky top-0 flex h-screen flex-col justify-center overflow-hidden">
         <div

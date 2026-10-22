@@ -1,4 +1,3 @@
-import Navbar from "@/components/layout/Navbar";
 import StaggerText from "@/components/layout/StaggerText";
 import { rainbowGradient } from "@/lib/gradients";
 
@@ -16,8 +15,6 @@ export default function Hero({ index }: { index: number }) {
       </video>
 
       <div className="absolute inset-0 bg-black/50" />
-
-      <Navbar />
 
       <div className="relative z-10 flex h-full items-center justify-center px-6 text-center sm:px-10">
         <h1 className="font-heading font-normal leading-none tracking-[0.02em] text-white text-[40px] sm:text-[64px] lg:text-[95px]">

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { ScrollIndexProvider } from "@/components/layout/ScrollContext";
 
-const TRANSITION_LOCK_MS = 700;
+const TRANSITION_MS = 1200;
 const SWIPE_THRESHOLD_PX = 30;
 // Ventana tras un gesto (rueda, touch, tecla) en la que el scroll se considera
 // provocado por ese gesto. Fuera de ella (p. ej. arrastrando la barra de
@@ -25,6 +25,7 @@ export default function ScrollPager({
   const touchStartedPastPaged = useRef(false);
   const lastScrollY = useRef(0);
   const lastGestureAt = useRef(0);
+  const animationFrame = useRef(0);
 
   useEffect(() => {
     function goToIndex(index: number) {
@@ -33,10 +34,25 @@ export default function ScrollPager({
       isTransitioning.current = true;
       activeIndexRef.current = clamped;
       setActiveIndex(clamped);
-      window.scrollTo({ top: clamped * window.innerHeight, behavior: "smooth" });
-      window.setTimeout(() => {
-        isTransitioning.current = false;
-      }, TRANSITION_LOCK_MS);
+      cancelAnimationFrame(animationFrame.current);
+      const from = window.scrollY;
+      const to = clamped * window.innerHeight;
+      const start = performance.now();
+
+      // scrollTo "smooth" no deja fijar la duracion; el easing senoidal evita
+      // el arranque y el corte bruscos entre los dos videos.
+      function tick(now: number) {
+        const t = Math.min(1, (now - start) / TRANSITION_MS);
+        const eased = -(Math.cos(Math.PI * t) - 1) / 2;
+        window.scrollTo(0, from + (to - from) * eased);
+        if (t < 1) {
+          animationFrame.current = requestAnimationFrame(tick);
+        } else {
+          isTransitioning.current = false;
+        }
+      }
+
+      animationFrame.current = requestAnimationFrame(tick);
     }
 
     // Pasada la ultima seccion paginada, el contenido que sigue (fuera del
@@ -146,6 +162,7 @@ export default function ScrollPager({
     window.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => {
+      cancelAnimationFrame(animationFrame.current);
       window.removeEventListener("wheel", handleWheel);
       window.removeEventListener("touchstart", handleTouchStart);
       window.removeEventListener("touchmove", handleTouchMove);
