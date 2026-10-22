@@ -5,6 +5,7 @@ import Description from "@/components/sections/Description";
 import DiscoverGatt from "@/components/sections/DiscoverGatt";
 import Hero from "@/components/sections/Hero";
 import History from "@/components/sections/History";
+import MemberFundraiser from "@/components/sections/MemberFundraiser";
 import MonthlyNetworking from "@/components/sections/MonthlyNetworking";
 import WhereItAllBegan from "@/components/sections/WhereItAllBegan";
 
@@ -30,6 +31,7 @@ export default function Home() {
       <DiscoverGatt />
       <Comments />
       <MonthlyNetworking />
+      <MemberFundraiser />
     </main>
   );
 }
