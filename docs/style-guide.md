@@ -85,6 +85,11 @@ Los tamaños y pesos de fuente **no son fijos por tipografía** — cada módulo
 | Landing — What We do abierto (título) | PP Radio Grotesk + Pinyon Script ("do", 1.3em), color primario | 30px / clamp(26px, 3.5vh, 34px) (lg) | 400 |
 | Landing — What We do abierto (subtítulo y títulos numerados) | PP Radio Grotesk | 16–17px / clamp(15px, 2vh, 19px) (lg) | 400 |
 | Landing — What We do abierto (párrafos) | Fraunces | 16px / clamp(14px, 1.7vh, 17px) (lg) | 400 |
+| Landing — The gatt Board abierto (título) | PP Radio Grotesk + Pinyon Script ("Gatt", 1.25em) | 40px / clamp(38px, 5.5vh, 52px) (lg) | 400 |
+| Landing — The gatt Board (nombre / cargo de cada miembro) | PP Radio Grotesk en mayúsculas / Fraunces | 14–15px / 13px | 400 / 300 |
+| Landing — The gatt Board (Advisors to the Board) | PP Radio Grotesk + Pinyon Script ("Board", 1.3em) | 22px / 24px (lg) | 400 |
+| Landing — Our mission abierto (título) | PP Radio Grotesk + Pinyon Script ("mission", 1.3em) | 34px / 40px (lg) | 400 |
+| Landing — Our mission abierto (párrafos de la tarjeta) | Fraunces | 16px / 17px (lg) | 400 |
 | Landing — Comments (cita) | Fraunces | 15px / clamp(14px, 1.2vw, 18px) (lg) | 300 (light) |
 | Landing — Comments (autor) | Pinyon Script | 18px / clamp(16px, 1.4vw, 22px) (lg) | 400 |
 | Landing — Monthly Networking (título) | PP Radio Grotesk + Pinyon Script ("mixer", 1.3em) | 40px / 52px (lg) | 400 |

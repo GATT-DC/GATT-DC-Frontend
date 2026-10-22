@@ -1,12 +1,15 @@
 "use client";
 
+import Image from "next/image";
 import { useRef } from "react";
 import type { RefObject } from "react";
+import CloseIcon from "@/components/layout/CloseIcon";
 import FolderTab from "@/components/layout/FolderTab";
 import Navbar from "@/components/layout/Navbar";
 import Paperclip from "@/components/layout/Paperclip";
 import PaperTexture from "@/components/layout/PaperTexture";
-import PhotoPlaceholder from "@/components/layout/PhotoPlaceholder";
+import { useFitContent } from "@/components/layout/useFitContent";
+import CapitolPhoto, { CAPITOL_ASPECT } from "@/components/layout/CapitolPhoto";
 import {
   FOLDER_EASE,
   placeAt,
@@ -61,6 +64,7 @@ export default function AboutUsOverlay({
   const photo2Ref = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const clipRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const coverCloneRef = useRef<HTMLDivElement>(null);
   const tabCloneRef = useRef<HTMLDivElement>(null);
   const photoCloneRef = useRef<HTMLDivElement>(null);
@@ -68,6 +72,9 @@ export default function AboutUsOverlay({
   // Apertura (FLIP): con el layout final ya renderizado se mide la carpeta
   // del stack y la vista abierta, y antes del primer pintado se arranca la
   // secuencia desde la posicion de la carpeta cerrada.
+  // Antes que la secuencia: el contenido ya ajustado al alto de la carpeta.
+  useFitContent(open, panelFillRef, contentRef);
+
   const requestClose = useFolderSequence({
     open,
     onClose,
@@ -109,7 +116,13 @@ export default function AboutUsOverlay({
       // Las copias (tapa, pestaña horizontal y foto) arrancan exactamente donde
       // estan en el stack.
       placeAt(coverClone, sheet.getBoundingClientRect());
-      placeAt(tabClone, tab.getBoundingClientRect());
+      const tabRect = tab.getBoundingClientRect();
+      placeAt(tabClone, tabRect);
+      // La pestaña va pegada al borde superior de la carpeta: su esquina
+      // inferior izquierda se desplaza igual que ese punto de la carpeta al
+      // crecer (el panel crece desde su esquina superior izquierda).
+      const tabEndX =
+        -tx + (tabRect.left - first.left) * (last.width / first.width - 1);
       const photoLast = photo1.getBoundingClientRect();
       placeAt(photoClone, photoLast);
       const photoFirst = photo.getBoundingClientRect();
@@ -160,13 +173,21 @@ export default function AboutUsOverlay({
         {
           el: tabClone,
           keyframes: [
-            { transform: "translate(0, 0)", opacity: 1 },
-            { transform: `translate(0, -${LIFT_PX}px)`, opacity: 1, offset: 0.25 },
-            { transform: `translate(${-tx * 0.5}px, ${-ty * 0.5}px)`, opacity: 0, offset: 0.6 },
-            { transform: `translate(${-tx}px, ${-ty}px)`, opacity: 0 },
+            { transform: "translate(0, 0)" },
+            { transform: `translate(0, -${LIFT_PX}px)`, offset: 0.25 },
+            { transform: `translate(${tabEndX}px, ${-ty}px)` },
           ],
           start: 0,
           duration: 1100,
+        },
+        // Se desvanece al final, sin despegarse, cuando aparece la pestaña
+        // vertical.
+        {
+          el: tabClone,
+          keyframes: [{ opacity: 1 }, { opacity: 1, offset: 0.6 }, { opacity: 0 }],
+          start: 550,
+          duration: 550,
+          easing: "linear",
         },
         // 3. La foto sale de la carpeta, se endereza y va a su lugar.
         {
@@ -257,11 +278,14 @@ export default function AboutUsOverlay({
         <div className="relative flex h-full">
           <div
             ref={panelFillRef}
-            className="relative flex-1 overflow-y-auto"
+            className="relative flex-1 overflow-y-auto [scrollbar-width:none] lg:overflow-hidden [&::-webkit-scrollbar]:hidden"
             style={{ backgroundColor: OPEN_FOLDER_COLOR }}
           >
             <PaperTexture />
-            <div className="relative flex flex-col gap-10 px-6 py-12 sm:px-12 lg:flex-row lg:gap-12 lg:py-16 lg:pl-[8%] lg:pr-0">
+            <div
+              ref={contentRef}
+              className="relative flex flex-col gap-10 px-6 py-12 sm:px-12 lg:flex-row lg:gap-12 lg:py-16 lg:pl-[8%] lg:pr-0"
+            >
               <div ref={textRef} className="lg:max-w-[760px] lg:flex-1">
                 <h2
                   id="about-us-title"
@@ -281,16 +305,21 @@ export default function AboutUsOverlay({
 
               <div className="flex gap-2 lg:ml-auto lg:mt-12 lg:w-[26%] lg:shrink-0 lg:flex-col lg:self-start">
                 <div ref={photo1Ref} className="flex-1 lg:flex-none">
-                  <PhotoPlaceholder
-                    label="Foto: Capitolio de EE. UU."
-                    className="aspect-[200/183] w-full"
+                  <CapitolPhoto
+                    sizes="(min-width: 1024px) 22vw, 50vw"
+                    className={`${CAPITOL_ASPECT} w-full`}
                   />
                 </div>
                 <div ref={photo2Ref} className="flex-1 lg:flex-none">
-                  <PhotoPlaceholder
-                    label="Foto: evento de networking"
-                    className="aspect-[200/183] w-full"
-                  />
+                  <div className={`relative w-full overflow-hidden ${CAPITOL_ASPECT}`}>
+                    <Image
+                      src="/images/landing/discover-gatt/eventonetworking.png"
+                      alt="GATT members laughing and talking at a networking event"
+                      fill
+                      sizes="(min-width: 1024px) 22vw, 50vw"
+                      className="object-cover"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -311,10 +340,13 @@ export default function AboutUsOverlay({
                 style={{ transform: "rotate(90deg) translateY(-100%)" }}
               >
                 <FolderTab fill="var(--color-azul)">
-                  <span className="font-heading text-[20px] text-white">
-                    About{" "}
-                    <span className="font-script inline-block text-[1.3em] leading-none">
-                      us
+                  <span className="flex items-center gap-2.5 text-white">
+                    <CloseIcon />
+                    <span className="font-heading text-[20px]">
+                      About{" "}
+                      <span className="font-script inline-block text-[1.3em] leading-none">
+                        us
+                      </span>
                     </span>
                   </span>
                 </FolderTab>
@@ -333,7 +365,10 @@ export default function AboutUsOverlay({
         aria-hidden="true"
         className="pointer-events-none fixed shadow-lg"
       >
-        <PhotoPlaceholder label="Foto: Capitolio de EE. UU." className="h-full w-full" />
+        <CapitolPhoto
+          sizes="(min-width: 1024px) 22vw, 50vw"
+          className="h-full w-full"
+        />
       </div>
 
       <div

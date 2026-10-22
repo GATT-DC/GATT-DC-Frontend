@@ -20,10 +20,14 @@ export default function FolderTab({
         className="-mr-px h-full w-4 shrink-0"
         aria-hidden="true"
       >
-        <path d="M0 40 C8 40 8 0 16 0 V40 Z" fill={fill} />
+        <path
+          d="M0 40 C8 40 8 0 16 0 V40 Z"
+          className="transition-[fill] duration-300"
+          style={{ fill }}
+        />
       </svg>
       <div
-        className="flex items-center whitespace-nowrap px-5"
+        className="flex items-center whitespace-nowrap px-5 transition-colors duration-300"
         style={{ backgroundColor: fill }}
       >
         {children}
@@ -36,7 +40,8 @@ export default function FolderTab({
       >
         <path
           d="M0 0 C8 0 10 4 13 12 L19 28 C22 36 25 40 32 40 H0 Z"
-          fill={fill}
+          className="transition-[fill] duration-300"
+          style={{ fill }}
         />
       </svg>
     </div>
