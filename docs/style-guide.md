@@ -84,6 +84,11 @@ Los tamaños y pesos de fuente **no son fijos por tipografía** — cada módulo
 | Landing — About us abierto (párrafos) | Fraunces | 17px / 18px (lg) | 300 (light) |
 | Landing — Comments (cita) | Fraunces | 15px / clamp(14px, 1.2vw, 18px) (lg) | 300 (light) |
 | Landing — Comments (autor) | Pinyon Script | 18px / clamp(16px, 1.4vw, 22px) (lg) | 400 |
+| Landing — Monthly Networking (título) | PP Radio Grotesk + Pinyon Script ("mixer", 1.3em) | 40px / 52px (lg) | 400 |
+| Landing — Monthly Networking (párrafo) | Fraunces | 17px / 19px (lg) | 300 (light) |
+| Landing — Monthly Networking (ubicación) | Sistema (UI), mayúsculas, tracking 0.12em, color verde | 14px | 400 |
+| Landing — Tarjetas de evento (título) | PP Radio Grotesk | 18px | 400 |
+| Landing — Fecha de evento (día / mes) | Fraunces / Sistema (UI) | 22px / 11px | 600 / 400 |
 
 ## Paleta de colores
 
