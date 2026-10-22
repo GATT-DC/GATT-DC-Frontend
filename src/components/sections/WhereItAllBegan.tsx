@@ -330,7 +330,7 @@ export default function WhereItAllBegan() {
                 {/* El parrafo se centra en el espacio restante para que la
                     separacion con la imagen sea igual a la del borde derecho. */}
                 <div className="flex justify-center px-6 lg:flex-1 lg:px-10">
-                  <p className="font-serif text-[16px] font-light leading-[1.3] text-white sm:text-[18px] lg:max-w-[300px]">
+                  <p className="font-serif text-[16px] font-light leading-[1.3] text-texto sm:text-[18px] lg:max-w-[300px]">
                     {slide.text}
                   </p>
                 </div>
@@ -339,7 +339,7 @@ export default function WhereItAllBegan() {
           })}
         </div>
 
-        <div className={`mt-3 h-px w-full bg-white/15 ${IMAGE_WIDTH}`}>
+        <div className={`mt-3 h-px w-full bg-texto/15 ${IMAGE_WIDTH}`}>
           <div ref={barRef} className="h-full bg-morado" />
         </div>
       </div>

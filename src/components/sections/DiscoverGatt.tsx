@@ -34,8 +34,8 @@ type BackFolder = {
 
 // About us cuando se resalta otra carpeta: cuerpo y pestaña oscuros como las
 // de atras, y la hoja un poco mas clara.
-const ABOUT_DIMMED = "#2e2e2e";
-const ABOUT_SHEET_DIMMED = "#353535";
+const ABOUT_DIMMED = "var(--color-carpeta-atenuada)";
+const ABOUT_SHEET_DIMMED = "var(--color-hoja-atenuada)";
 // Aclarado de la hoja del frente de una carpeta resaltada (el mismo de la hoja
 // de About us), para que se vea el borde mas oscuro del fondo.
 const SHEET_TINT = "rgb(200 204 216 / 0.25)";
@@ -44,15 +44,15 @@ const SHEET_TINT = "rgb(200 204 216 / 0.25)";
 // El orden es de atras hacia adelante. Todas se abren menos "Our community",
 // que aun no tiene contenido.
 const BACK_FOLDERS: BackFolder[] = [
-  { id: "community", lead: "Our", accent: "community", color: "var(--color-rojo)", shade: "#1f1f1f", offset: "0%" },
-  { id: "board", lead: "The", accent: "gatt", trail: "Board", color: "var(--color-naranja)", shade: "#232323", offset: "10%" },
+  { id: "community", lead: "Our", accent: "community", color: "var(--color-rojo)", shade: "var(--color-carpeta-1)", offset: "0%" },
+  { id: "board", lead: "The", accent: "gatt", trail: "Board", color: "var(--color-naranja)", shade: "var(--color-carpeta-2)", offset: "10%" },
   {
-    id: "mission", lead: "Our", accent: "mission", color: "var(--color-verde)", shade: "#272727", offset: "0%",
+    id: "mission", lead: "Our", accent: "mission", color: "var(--color-verde)", shade: "var(--color-carpeta-3)", offset: "0%",
     preview: "To bring together LGBTQ+ professionals and allies in international trade, fostering a community built on meaningful connections, professional development, and the exchange of knowledge.",
     peek: { src: "ourmission.jpeg", width: 613, height: 756, className: "left-[76%] w-[11%] min-w-[100px] -rotate-[4deg] rounded-md" },
   },
   {
-    id: "what-we-do", lead: "What We", accent: "do", color: "var(--color-amarillo)", shade: "#2b2b2b", offset: "14%",
+    id: "what-we-do", lead: "What We", accent: "do", color: "var(--color-amarillo)", shade: "var(--color-carpeta-4)", offset: "14%",
     preview: "We bring together LGBTQ+ professionals and allies in international trade through conversations, professional connections, and opportunities to learn and grow. Our programs create space to exchange ideas, advance careers, and build lasting relationships across Washington’s trade community.",
     peek: { src: "whoweare.png", width: 1152, height: 3020, className: "left-[76%] w-[12%] min-w-[110px] rotate-[5deg]" },
   },
@@ -184,7 +184,7 @@ export default function DiscoverGatt() {
       style={{ overflowX: "clip" }}
     >
       <div className="flex flex-col gap-10 lg:flex-row lg:items-end">
-        <h2 className="font-heading px-6 text-[48px] font-normal leading-none text-white lg:flex lg:w-[13%] lg:shrink-0 lg:justify-center lg:px-0 lg:text-[72px]">
+        <h2 className="font-heading px-6 text-[48px] font-normal leading-none text-texto lg:flex lg:w-[13%] lg:shrink-0 lg:justify-center lg:px-0 lg:text-[72px]">
           <span className="lg:rotate-180 lg:[writing-mode:vertical-rl]">
             Discover{" "}
             <span className="font-script inline-block px-1 text-[1.3em] leading-normal">

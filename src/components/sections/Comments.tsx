@@ -79,7 +79,7 @@ const TESTIMONIALS: Testimonial[] = [
     author: "Caroline Adams",
     shape: "box",
     accent: "naranja",
-    inactiveFill: "#2c2c2c",
+    inactiveFill: "var(--color-superficie)",
   },
   {
     quote:
@@ -87,7 +87,7 @@ const TESTIMONIALS: Testimonial[] = [
     author: "Miguel Stevens",
     shape: "pill",
     accent: "azul",
-    inactiveFill: "#2e2e2e",
+    inactiveFill: "var(--color-superficie)",
   },
   {
     quote:
@@ -95,7 +95,7 @@ const TESTIMONIALS: Testimonial[] = [
     author: "Miguel Stevens",
     shape: "cloud",
     accent: "morado",
-    inactiveFill: "#2a2a2a",
+    inactiveFill: "var(--color-superficie-2)",
   },
 ];
 
@@ -242,14 +242,14 @@ export default function Comments() {
                 <div className="min-w-0">
                   <blockquote
                     className={`font-serif text-[15px] font-light leading-[1.3] transition-colors duration-700 lg:text-[clamp(14px,1.15vw,17px)] ${
-                      isActive ? "text-white" : "text-white/40"
+                      isActive ? "text-white" : "text-texto/40"
                     }`}
                   >
                     “{testimonial.quote}”
                   </blockquote>
                   <figcaption
                     className="font-script mt-2 text-[18px] leading-none transition-colors duration-700 lg:text-[clamp(16px,1.4vw,22px)]"
-                    style={{ color: isActive ? accent.author : "rgb(255 255 255 / 0.35)" }}
+                    style={{ color: isActive ? accent.author : "color-mix(in srgb, var(--color-texto) 35%, transparent)" }}
                   >
                     — {testimonial.author}
                   </figcaption>
@@ -280,7 +280,7 @@ export default function Comments() {
               className="h-2.5 w-2.5 rounded-full transition-colors"
               style={{
                 backgroundColor:
-                  i === active ? activeAccent.fill : "rgb(255 255 255 / 0.25)",
+                  i === active ? activeAccent.fill : "color-mix(in srgb, var(--color-texto) 25%, transparent)",
               }}
             />
           ))}

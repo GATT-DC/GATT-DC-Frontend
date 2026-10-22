@@ -26,7 +26,7 @@ export default function History() {
       ref={sectionRef}
       className="relative flex w-full justify-center bg-fondo px-6 py-36"
     >
-      <p className="font-serif max-w-72 text-center text-[20px] font-light leading-[1.25] text-white">
+      <p className="font-serif max-w-72 text-center text-[20px] font-light leading-[1.25] text-texto">
         <StaggerText
           active={visible}
           lines={[

@@ -61,7 +61,7 @@ export default function MonthlyNetworking() {
     >
       <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
         <div>
-          <h2 className="font-heading text-[40px] font-normal leading-none text-white lg:text-[52px]">
+          <h2 className="font-heading text-[40px] font-normal leading-none text-texto lg:text-[52px]">
             Monthly Networking
             <span className="font-script block pl-1 text-[1.3em] leading-[1.05]">
               mixer
@@ -70,7 +70,7 @@ export default function MonthlyNetworking() {
           <p className="mt-6 pl-1 font-ui text-[14px] tracking-[0.12em] text-verde lg:mt-8">
             WASHINGTON D.C.
           </p>
-          <p className="mt-6 max-w-[480px] font-serif text-[17px] font-light leading-[1.3] text-white lg:mt-8 lg:text-[19px]">
+          <p className="mt-6 max-w-[480px] font-serif text-[17px] font-light leading-[1.3] text-texto lg:mt-8 lg:text-[19px]">
             Join GATT this September for an evening of networking,
             conversation, and connection with professionals across the
             international trade community.
@@ -127,14 +127,27 @@ export default function MonthlyNetworking() {
         </div>
       </div>
 
-      <hr className="mt-16 border-white/20 lg:mt-20" />
+      <hr className="mt-16 border-texto/20 lg:mt-20" />
 
       <div className="mt-8 flex justify-end">
         <a
           href="#events"
-          className="rounded-full bg-primario-hover px-5 py-2 font-ui text-[16px] text-white transition-colors hover:bg-primario"
+          className="flex items-center gap-2 rounded-full bg-primario-hover px-5 py-2 font-ui text-[16px] text-white transition-colors hover:bg-primario"
         >
           View Events
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-4 w-4"
+            aria-hidden="true"
+          >
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
         </a>
       </div>
 
@@ -142,7 +155,7 @@ export default function MonthlyNetworking() {
         {UPCOMING_EVENTS.map((event) => (
           <li
             key={event.id}
-            className="relative aspect-[4/3] rounded-[4px] bg-[#2e2e2e]"
+            className="relative aspect-[4/3] rounded-[4px] bg-superficie"
           >
             {/* Fecha en una esquina recortada de la tarjeta. */}
             <DateBadge
@@ -152,17 +165,30 @@ export default function MonthlyNetworking() {
             />
             <div className="absolute inset-x-0 bottom-0 flex items-end justify-between px-5 pb-4">
               <div>
-                <span className="block font-heading text-[18px] leading-tight text-white">
+                <span className="block font-heading text-[18px] leading-tight text-texto">
                   {event.title}
                 </span>
-                <span className="mt-1 block pl-2 font-ui text-[11px] tracking-[0.12em] text-white/85">
+                <span className="mt-1 block pl-2 font-ui text-[11px] tracking-[0.12em] text-texto/85">
                   {event.location}
                 </span>
               </div>
               <span
                 aria-hidden="true"
-                className="h-8 w-8 rounded-full bg-primario"
-              />
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-primario text-white"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2.25}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-4 w-4"
+                >
+                  <path d="M7 17 17 7M9 7h8v8" />
+                </svg>
+              </span>
             </div>
           </li>
         ))}

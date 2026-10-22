@@ -15,10 +15,9 @@ export const pinyon = localFont({
 // PP Radio Grotesk: pendiente de comprar la licencia comercial. Mientras
 // tanto se prueba localmente con la version gratuita (solo uso personal,
 // ver docs/style-guide.md) sin commitear el bloque de abajo ni el archivo
-// (esta en .gitignore). Para probar localmente, descomentar:
-//
-// export const radioGrotesk = localFont({
-//   src: "../fonts/RadioGrotesk-Regular.otf",
-//   variable: "--font-radio-grotesk",
-//   weight: "400",
-// });
+// (esta en .gitignore).
+export const radioGrotesk = localFont({
+  src: "../fonts/RadioGrotesk-Regular.otf",
+  variable: "--font-radio-grotesk",
+  weight: "400",
+});

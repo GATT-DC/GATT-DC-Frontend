@@ -19,17 +19,17 @@ const TEXT_RADIUS = RADIUS + STROKE / 2 + 16;
 const TEXT_PATH = `M ${CENTER} ${CENTER - TEXT_RADIUS} A ${TEXT_RADIUS} ${TEXT_RADIUS} 0 1 1 ${CENTER} ${CENTER + TEXT_RADIUS} A ${TEXT_RADIUS} ${TEXT_RADIUS} 0 1 1 ${CENTER} ${CENTER - TEXT_RADIUS}`;
 
 const TIERS = [
-  { name: "Platinum", amount: "$1,500", color: "#e5e5e5" },
+  { name: "Platinum", amount: "$1,500", color: "var(--color-texto)" },
   { name: "Gold", amount: "$5,000", color: "var(--color-amarillo)" },
   { name: "Bronze", amount: "$1,500", color: "#d9925f" },
   { name: "Silver", amount: "$3,000", color: "#8c8c8c" },
 ];
 
-// Logos de los patrocinadores (carrusel infinito). 1.png es Barnes & Thornburg
-// con letras negras (no se ve sobre el fondo oscuro), asi que se usa la
-// version clara (2.png). Falta el logo de BakerHostetler.
-const SPONSORS = [
-  { logo: "2.png", name: "Barnes & Thornburg LLP" },
+// Logos de los patrocinadores (carrusel infinito). Barnes & Thornburg tiene
+// version de letras blancas (2.png, modo oscuro) y negras (1.png, modo claro).
+// Falta el logo de BakerHostetler.
+const SPONSORS: { logo: string; lightLogo?: string; name: string }[] = [
+  { logo: "2.png", lightLogo: "1.png", name: "Barnes & Thornburg LLP" },
   { logo: "3.png", name: "Steptoe" },
   { logo: "4.png", name: "Cassidy Levy Kent" },
 ];
@@ -117,7 +117,7 @@ export default function MemberFundraiser() {
             cy={CENTER}
             r={RADIUS}
             fill="none"
-            stroke="#2e2e2e"
+            stroke="var(--color-superficie)"
             strokeWidth={STROKE}
           />
           <circle
@@ -138,7 +138,7 @@ export default function MemberFundraiser() {
           <g mask="url(#fundraiser-reveal)" aria-hidden="true">
             <text
               className="font-heading"
-              fill="white"
+              fill="var(--color-texto)"
               fontSize={27}
               letterSpacing={0.5}
             >
@@ -154,10 +154,10 @@ export default function MemberFundraiser() {
             filled ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
           }`}
         >
-          <p className="font-serif text-[14px] font-light text-white sm:text-[16px]">
+          <p className="font-serif text-[14px] font-light text-texto sm:text-[16px]">
             GATT DC Member Fundraiser
           </p>
-          <h2 className="font-heading mt-3 text-[30px] font-normal leading-none text-white sm:text-[44px]">
+          <h2 className="font-heading mt-3 text-[30px] font-normal leading-none text-texto sm:text-[44px]">
             Shape the Next
             <span className="font-script block text-[1.3em] leading-[1.05]">
               chapter
@@ -173,10 +173,10 @@ export default function MemberFundraiser() {
       </div>
 
       <div className="mt-20 lg:mt-24">
-        <h3 className="font-heading text-[22px] font-normal text-white lg:text-[26px]">
+        <h3 className="font-heading text-[22px] font-normal text-texto lg:text-[26px]">
           GATT DC welcomes interest in sponsoring our organization.
         </h3>
-        <p className="mt-4 font-serif text-[17px] font-light leading-[1.35] text-white lg:text-[19px]">
+        <p className="mt-4 font-serif text-[17px] font-light leading-[1.35] text-texto lg:text-[19px]">
           Donations to GATT DC go toward supporting our mission of providing
           educational, networking, and career advancement opportunities to
           LGBTQ+ and allied professionals in international trade and
@@ -187,7 +187,7 @@ export default function MemberFundraiser() {
           {TIERS.map((tier) => (
             <li
               key={tier.name}
-              className="flex items-center gap-4 rounded-md bg-[#262626] px-5 py-4"
+              className="flex items-center gap-4 rounded-md bg-superficie-2 px-5 py-4"
             >
               <span
                 className="font-heading min-w-[5.5rem] shrink-0 text-[20px]"
@@ -196,10 +196,10 @@ export default function MemberFundraiser() {
                 {tier.name}
               </span>
               <span className="leading-tight">
-                <span className="font-heading block text-[17px] text-white">
+                <span className="font-heading block text-[17px] text-texto">
                   {tier.amount}
                 </span>
-                <span className="block whitespace-nowrap font-serif text-[14px] font-light text-white">
+                <span className="block whitespace-nowrap font-serif text-[14px] font-light text-texto">
                   Annual Contribution
                 </span>
               </span>
@@ -207,7 +207,7 @@ export default function MemberFundraiser() {
           ))}
         </ul>
 
-        <div className="mt-10 space-y-6 font-serif text-[17px] font-light leading-[1.35] text-white lg:text-[19px]">
+        <div className="mt-10 space-y-6 font-serif text-[17px] font-light leading-[1.35] text-texto lg:text-[19px]">
           <p>
             All sponsors will be recognized on the GATT DC website, in all email
             correspondence, and in certain social media (e.g., Facebook,
@@ -225,15 +225,26 @@ export default function MemberFundraiser() {
       <div className="-mx-6 mt-20 sm:-mx-10 lg:-mx-[9.5238%] lg:mt-28">
         <Marquee speed={45} className="py-4">
           {SPONSORS.map((sponsor) => (
-            <Image
-              key={sponsor.logo}
-              src={`/images/landing/member-fundraiser/${sponsor.logo}`}
-              alt={sponsor.name}
-              width={5535}
-              height={1845}
-              sizes="300px"
-              className="mx-10 h-auto w-[220px] lg:mx-14 lg:w-[280px]"
-            />
+            <span key={sponsor.logo} className="mx-10 w-[220px] lg:mx-14 lg:w-[280px]">
+              <Image
+                src={`/images/landing/member-fundraiser/${sponsor.logo}`}
+                alt={sponsor.name}
+                width={5535}
+                height={1845}
+                sizes="300px"
+                className={`h-auto w-full ${sponsor.lightLogo ? "hidden dark:block" : ""}`}
+              />
+              {sponsor.lightLogo && (
+                <Image
+                  src={`/images/landing/member-fundraiser/${sponsor.lightLogo}`}
+                  alt={sponsor.name}
+                  width={5535}
+                  height={1845}
+                  sizes="300px"
+                  className="h-auto w-full dark:hidden"
+                />
+              )}
+            </span>
           ))}
         </Marquee>
 

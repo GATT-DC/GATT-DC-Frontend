@@ -102,6 +102,9 @@ Los tamaños y pesos de fuente **no son fijos por tipografía** — cada módulo
 | Landing — Member Fundraiser (título patrocinio) | PP Radio Grotesk | 22px / 26px (lg) | 400 |
 | Landing — Niveles de patrocinio (nombre / monto / descripción) | PP Radio Grotesk / PP Radio Grotesk / Fraunces | 20px / 17px / 14px | 400 / 400 / 300 |
 | Landing — Franja de novedades (carrusel naranja) | PP Radio Grotesk | 18px / 20px (lg) | 400 |
+| Landing — Join Our community (título) | PP Radio Grotesk + Pinyon Script ("community", 1.6em) | 44px / 56px (lg) | 400 |
+| Landing — Join Our community (párrafo) | Fraunces | 16px / 18px (lg) | 300 (light) |
+| Footer — copyright y Privacy Policy | Sistema (UI) | 12px | 400 |
 
 ## Paleta de colores
 
@@ -126,28 +129,7 @@ Paleta "arcoiris": 6 colores de acento, sin jerarquía entre ellos (ninguno es "
 
 - **Uso:** ninguno tiene un rol fijo (no son "primario", "error", "éxito", etc.) — son acentos decorativos intercambiables. Si en el futuro se necesita un color con significado semántico (ej. error de formulario, confirmación de éxito), definirlo aparte y no asumir que corresponde a alguno de estos por su tono.
 - **Modo oscuro:** cada color tiene su propia variante ya definida arriba — no derivar el modo oscuro automáticamente (ej. con opacidad o `filter`), usar el hex exacto de la tabla.
-- **Implementación sugerida:** definir como CSS custom properties en `globals.css`, con la variante de modo oscuro dentro de `@media (prefers-color-scheme: dark)` o bajo un atributo `[data-theme="dark"]` si el modo se controla manualmente (switch de usuario) en vez de solo la preferencia del sistema.
+- **Implementación:** el modo se controla con un switch manual (icono de sol/luna en el navbar), no con la preferencia del sistema. **El modo oscuro es el predeterminado.** `<html>` lleva `data-theme="dark"` o `data-theme="light"`; la elección se guarda en `localStorage` (`theme`) y un script en `layout.tsx` la aplica antes del primer pintado.
+- **Variables:** en `globals.css`, `@theme` define los valores del modo oscuro y `:root[data-theme="light"]` los redefine. Además de la paleta hay tokens de tema: `fondo` (`#141414` / `#ffffff`), `texto` (blanco / `#141414`), `superficie` y `superficie-2` (tarjetas) y `carpeta-1..4` / `carpeta-atenuada` / `hoja-atenuada` (stack de Discover gatt). Para texto sobre el fondo de la pagina usar `text-texto`, no `text-white`; el blanco fijo queda solo sobre colores, fotos o video.
+- **Imagenes por tema:** con la variante `dark:` (ligada a `data-theme`): `hidden dark:block` para la version oscura y `dark:hidden` para la clara. Hoy cambian la ilustracion del footer (`washington_white.png` en claro) y el logo de Barnes & Thornburg (`1.png` en claro).
 
-  ```css
-  :root {
-    --color-rojo: #D54954;
-    --color-naranja: #F3652C;
-    --color-amarillo: #FFC700;
-    --color-verde: #009948;
-    --color-azul: #3E7BE9;
-    --color-morado: #9839FD;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --color-rojo: #FA6F7A;
-      --color-naranja: #F47A49;
-      --color-amarillo: #FED440;
-      --color-verde: #23C46F;
-      --color-azul: #79A9FF;
-      --color-morado: #C58FFE;
-    }
-  }
-  ```
-
-<!-- Pendiente: definir si el modo oscuro se controla por preferencia de sistema, switch manual, o ambos -->

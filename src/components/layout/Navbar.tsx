@@ -1,7 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
+import ThemeToggle from "@/components/layout/ThemeToggle";
 
-export default function Navbar() {
+// onMedia: el navbar va sobre una imagen o video oscuro (Hero), asi que sus
+// iconos son siempre blancos; si no, siguen el color de texto del tema.
+export default function Navbar({ onMedia = true }: { onMedia?: boolean }) {
+  const iconColor = onMedia ? "text-white" : "text-texto";
   return (
     <header className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-6 py-4 sm:px-10">
       <Link href="/" className="shrink-0">
@@ -34,7 +38,7 @@ export default function Navbar() {
         <button
           type="button"
           aria-label="Abrir menú"
-          className="flex h-10 w-10 items-center justify-center text-white"
+          className={`flex h-10 w-10 items-center justify-center ${iconColor}`}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -49,6 +53,8 @@ export default function Navbar() {
             <path d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
+
+        <ThemeToggle className={iconColor} />
       </div>
     </header>
   );

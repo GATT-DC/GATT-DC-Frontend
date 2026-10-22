@@ -325,10 +325,10 @@ export default function BackFolderOverlay({
       aria-labelledby={titleId}
       className="fixed inset-0 z-50"
     >
-      <div ref={backdropRef} className="absolute inset-0 bg-black" />
+      <div ref={backdropRef} className="absolute inset-0 bg-fondo" />
 
       <div ref={navRef}>
-        <Navbar />
+        <Navbar onMedia={false} />
       </div>
 
       <div
