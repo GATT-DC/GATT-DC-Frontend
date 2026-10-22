@@ -38,7 +38,7 @@ export default function Navbar({ onMedia }: { onMedia?: boolean }) {
     <header className="pointer-events-none fixed inset-x-0 top-0 z-40 flex items-center justify-between px-6 py-4 sm:px-10">
       <Link href="/" className="pointer-events-auto shrink-0">
         <Image
-          src="/images/landing/hero/GATTDC-logo.png"
+          src="/images/landing/hero/logo-gatt.png"
           alt="GATT DC"
           width={160}
           height={48}
