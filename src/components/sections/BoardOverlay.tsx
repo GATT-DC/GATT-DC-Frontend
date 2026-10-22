@@ -44,7 +44,7 @@ const ADVISORS: Member[] = [
 // En desktop, --card (ancho de cada tarjeta) se ajusta al alto de la pantalla
 // para que la junta y los asesores quepan sin scroll, y el bloque de contenido
 // mide lo que el grupo de 4 tarjetas con su separacion.
-const CARD_GAP = "1rem";
+const CARD_GAP = "1.5rem";
 
 function BoardLabel({ className = "" }: { className?: string }) {
   return (
@@ -150,7 +150,7 @@ function MemberCard({
       <p className="font-heading mt-2 text-[14px] uppercase leading-tight text-white lg:mt-1.5 lg:text-[15px]">
         {member.name}
       </p>
-      <p className="font-serif text-[13px] font-light leading-tight text-white/90 lg:whitespace-nowrap">
+      <p className="mt-1 w-full px-1 font-serif text-[13px] font-light leading-snug text-white/90 [overflow-wrap:anywhere]">
         {member.role}
       </p>
     </li>
