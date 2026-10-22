@@ -43,6 +43,7 @@ export default function Navbar({ onMedia }: { onMedia?: boolean }) {
           width={160}
           height={48}
           priority
+          unoptimized
           className="h-12 w-auto"
         />
       </Link>

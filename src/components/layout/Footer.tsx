@@ -65,6 +65,7 @@ export default function Footer() {
             alt="GATT DC"
             width={120}
             height={36}
+            unoptimized
           />
         </Link>
 
