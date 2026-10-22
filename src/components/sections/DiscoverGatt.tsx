@@ -6,12 +6,16 @@ import Paperclip from "@/components/layout/Paperclip";
 import PaperTexture from "@/components/layout/PaperTexture";
 import PhotoPlaceholder from "@/components/layout/PhotoPlaceholder";
 import AboutUsOverlay from "@/components/sections/AboutUsOverlay";
+import WhatWeDoOverlay, {
+  type BackFolderOrigin,
+} from "@/components/sections/WhatWeDoOverlay";
 import {
   SHEET_BACKGROUND,
   type FolderOrigin,
 } from "@/components/sections/AboutUsOverlay";
 
 type BackFolder = {
+  id: string;
   lead: string;
   accent: string;
   trail?: string;
@@ -20,13 +24,14 @@ type BackFolder = {
   offset: string;
 };
 
-// Carpetas de atras (aun sin contenido): pestaña oscura con la etiqueta en su
-// color de la paleta. El orden es de atras hacia adelante.
+// Carpetas de atras: pestaña oscura con la etiqueta en su color de la paleta.
+// El orden es de atras hacia adelante. Solo "What We do" tiene contenido por
+// ahora; las demas son visuales.
 const BACK_FOLDERS: BackFolder[] = [
-  { lead: "Our", accent: "community", color: "var(--color-rojo)", shade: "#1f1f1f", offset: "0%" },
-  { lead: "The", accent: "gatt", trail: "Board", color: "var(--color-naranja)", shade: "#232323", offset: "10%" },
-  { lead: "Our", accent: "mission", color: "var(--color-verde)", shade: "#272727", offset: "0%" },
-  { lead: "What We", accent: "do", color: "var(--color-amarillo)", shade: "#2b2b2b", offset: "14%" },
+  { id: "community", lead: "Our", accent: "community", color: "var(--color-rojo)", shade: "#1f1f1f", offset: "0%" },
+  { id: "board", lead: "The", accent: "gatt", trail: "Board", color: "var(--color-naranja)", shade: "#232323", offset: "10%" },
+  { id: "mission", lead: "Our", accent: "mission", color: "var(--color-verde)", shade: "#272727", offset: "0%" },
+  { id: "what-we-do", lead: "What We", accent: "do", color: "var(--color-amarillo)", shade: "#2b2b2b", offset: "14%" },
 ];
 
 function TabLabel({
@@ -52,14 +57,29 @@ function TabLabel({
 }
 
 export default function DiscoverGatt() {
-  const [open, setOpen] = useState(false);
+  const [openFolder, setOpenFolder] = useState<"about" | "what-we-do" | null>(
+    null,
+  );
+  const open = openFolder === "about";
+  const whatWeDoOpen = openFolder === "what-we-do";
   const openerRef = useRef<HTMLButtonElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
   const photoRef = useRef<HTMLDivElement>(null);
-  const close = useCallback(() => setOpen(false), []);
+  const whatWeDoTabRef = useRef<HTMLButtonElement>(null);
+  const whatWeDoBodyRef = useRef<HTMLDivElement>(null);
+  const close = useCallback(() => setOpenFolder(null), []);
   const origin = useMemo<FolderOrigin>(
     () => ({ body: bodyRef, sheet: sheetRef, tab: openerRef, photo: photoRef }),
+    [],
+  );
+  const whatWeDoOrigin = useMemo<BackFolderOrigin>(
+    () => ({
+      body: whatWeDoBodyRef,
+      tab: whatWeDoTabRef,
+      coveredBy: bodyRef,
+      coveredByTab: openerRef,
+    }),
     [],
   );
 
@@ -82,24 +102,49 @@ export default function DiscoverGatt() {
           className="relative w-full lg:w-auto lg:flex-1 [--front:360px] [--step:64px] lg:[--front:290px] lg:[--step:88px]"
           style={{ height: "calc(var(--step) * 4 + 2.5rem + var(--front))" }}
         >
-          {BACK_FOLDERS.map((folder, i) => (
-            <div
-              key={folder.accent}
-              aria-hidden="true"
-              className="absolute inset-x-0 bottom-0 flex flex-col"
-              style={{ top: `calc(var(--step) * ${i})`, zIndex: i }}
-            >
-              <div style={{ paddingLeft: folder.offset }}>
-                <FolderTab fill={folder.shade}>
-                  <TabLabel {...folder} />
-                </FolderTab>
-              </div>
+          {BACK_FOLDERS.map((folder, i) => {
+            const isWhatWeDo = folder.id === "what-we-do";
+            const tab = (
+              <FolderTab fill={folder.shade}>
+                <TabLabel {...folder} />
+              </FolderTab>
+            );
+            return (
               <div
-                className="flex-1 rounded-tl-lg"
-                style={{ backgroundColor: folder.shade }}
-              />
-            </div>
-          ))}
+                key={folder.id}
+                aria-hidden={isWhatWeDo ? undefined : true}
+                className="absolute inset-x-0 bottom-0 flex flex-col"
+                style={{
+                  top: `calc(var(--step) * ${i})`,
+                  zIndex: i,
+                  // Mientras esta abierta, la vista abierta toma su lugar.
+                  visibility: isWhatWeDo && whatWeDoOpen ? "hidden" : undefined,
+                }}
+              >
+                <div style={{ paddingLeft: folder.offset }}>
+                  {isWhatWeDo ? (
+                    <button
+                      ref={whatWeDoTabRef}
+                      type="button"
+                      onClick={() => setOpenFolder("what-we-do")}
+                      aria-haspopup="dialog"
+                      aria-expanded={whatWeDoOpen}
+                      className="block transition-[filter] duration-300 hover:brightness-125 focus-visible:brightness-125"
+                    >
+                      {tab}
+                    </button>
+                  ) : (
+                    tab
+                  )}
+                </div>
+                <div
+                  ref={isWhatWeDo ? whatWeDoBodyRef : undefined}
+                  className="flex-1 rounded-tl-lg"
+                  style={{ backgroundColor: folder.shade }}
+                />
+              </div>
+            );
+          })}
 
           {/* Carpeta del frente: About us. Mientras esta abierta se oculta: la
               vista abierta toma su lugar con copias en la misma posicion. */}
@@ -114,7 +159,7 @@ export default function DiscoverGatt() {
               <button
                 ref={openerRef}
                 type="button"
-                onClick={() => setOpen(true)}
+                onClick={() => setOpenFolder("about")}
                 aria-haspopup="dialog"
                 aria-expanded={open}
                 className="block transition-[filter] duration-300 hover:brightness-110 focus-visible:brightness-110"
@@ -132,7 +177,11 @@ export default function DiscoverGatt() {
               {/* Foto metida en la carpeta: queda detras de la hoja. */}
               <div
                 ref={photoRef}
-                className="absolute left-[52%] top-[-120px] w-[17%] min-w-[140px] -rotate-12 shadow-lg lg:left-[42%]"
+                className={`absolute left-[52%] top-[-120px] w-[17%] min-w-[140px] shadow-lg transition-[opacity,translate,rotate] lg:left-[42%] ${
+                  whatWeDoOpen
+                    ? "translate-y-[150px] -rotate-12 opacity-0 duration-400 ease-in"
+                    : "-rotate-12 opacity-100 duration-600 ease-out"
+                }`}
               >
                 <PhotoPlaceholder
                   label="Foto: Capitolio de EE. UU."
@@ -157,7 +206,7 @@ export default function DiscoverGatt() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setOpen(true)}
+                  onClick={() => setOpenFolder("about")}
                   className="absolute bottom-4 right-6 flex items-center gap-1.5 font-ui text-[15px] text-white/90 transition-colors hover:text-white"
                 >
                   Learn More
@@ -177,13 +226,27 @@ export default function DiscoverGatt() {
                 </button>
               </div>
 
-              <Paperclip className="absolute left-[calc(52%+100px)] top-[-34px] z-20 h-24 w-8 rotate-6 lg:left-[calc(42%+min(12%,180px))]" />
+              {/* La foto y el clip sobresalen de la carpeta: al abrir What We do la
+                  foto se guarda dentro (baja detras de la hoja) para no quedar
+                  encima, y al cerrarla vuelve a salir y el clip se engancha. */}
+              <Paperclip
+                className={`absolute left-[calc(52%+100px)] top-[-34px] z-20 h-24 w-8 rotate-6 transition-[opacity,translate] lg:left-[calc(42%+min(12%,180px))] ${
+                  whatWeDoOpen
+                    ? "translate-y-6 opacity-0 duration-200 ease-in"
+                    : "opacity-100 delay-350 duration-300 ease-out"
+                }`}
+              />
             </div>
           </div>
         </div>
       </div>
 
       <AboutUsOverlay open={open} onClose={close} origin={origin} />
+      <WhatWeDoOverlay
+        open={whatWeDoOpen}
+        onClose={close}
+        origin={whatWeDoOrigin}
+      />
     </section>
   );
 }
