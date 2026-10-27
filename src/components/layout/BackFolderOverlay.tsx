@@ -5,10 +5,13 @@ import type { ReactNode, RefObject } from "react";
 import CloseIcon from "@/components/layout/CloseIcon";
 import FolderTab from "@/components/layout/FolderTab";
 import Navbar from "@/components/layout/Navbar";
-import PaperTexture from "@/components/layout/PaperTexture";
+import PaperTexture, { type FolderTexture } from "@/components/layout/PaperTexture";
 import { useFitContent } from "@/components/layout/useFitContent";
 import {
+  CARD_CONTENT_AT,
+  CARD_TOTAL_MS,
   FOLDER_EASE,
+  cardExpandSteps,
   placeAt,
   useFolderSequence,
   type FolderStep,
@@ -16,12 +19,15 @@ import {
 
 // Carpeta cerrada (de atras en el stack) desde donde parte la animacion, y lo
 // que la tapa en el stack: el cuerpo de la carpeta siguiente y su pestaña.
+// Las tarjetas de celular no estan tapadas por nada y no los llevan.
 export type BackFolderOrigin = {
   body: RefObject<HTMLDivElement | null>;
   tab: RefObject<HTMLButtonElement | null>;
-  coveredBy: RefObject<HTMLDivElement | null>;
+  coveredBy?: RefObject<HTMLDivElement | null>;
   // Pestaña de la carpeta siguiente: queda por encima mientras esta sale.
-  coveredByTab: RefObject<HTMLElement | null>;
+  coveredByTab?: RefObject<HTMLElement | null>;
+  // Viene de una tarjeta de celular: se abre con la animacion de tarjeta.
+  card?: boolean;
 };
 
 // Animacion de entrada del contenido al abrirse la tapa. Cada elemento la
@@ -66,6 +72,7 @@ export default function BackFolderOverlay({
   coverColor,
   interiorColor,
   coveringTab,
+  texture,
   sideTabs,
   highlighted = false,
   children,
@@ -81,6 +88,8 @@ export default function BackFolderOverlay({
   coverColor: string;
   interiorColor: string;
   coveringTab: ReactNode;
+  // Textura de la carpeta (interior, hoja del frente y borde).
+  texture: FolderTexture;
   sideTabs?: ReactNode;
   // La pestaña ya estaba pintada de su color (hover) al abrir.
   highlighted?: boolean;
@@ -106,14 +115,14 @@ export default function BackFolderOverlay({
   const requestClose = useFolderSequence({
     open,
     onClose,
-    totalMs: EXPAND_END + 600,
+    totalMs: origin.card ? CARD_TOTAL_MS : EXPAND_END + 600,
     closeRef,
     returnFocusRef: origin.tab,
     buildSteps: () => {
       const body = origin.body.current;
       const tab = origin.tab.current;
-      const coveredBy = origin.coveredBy.current;
-      const coveredByTab = origin.coveredByTab.current;
+      const coveredBy = origin.coveredBy?.current ?? null;
+      const coveredByTab = origin.coveredByTab?.current ?? null;
       const coveringTabClone = coveringTabCloneRef.current;
       const backdrop = backdropRef.current;
       const nav = navRef.current;
@@ -126,12 +135,43 @@ export default function BackFolderOverlay({
       const cover = coverRef.current;
       const coverFill = coverFillRef.current;
       const coverClone = coverCloneRef.current;
+      const content = contentRef.current;
       if (
-        !body || !tab || !coveredBy || !coveredByTab || !coveringTabClone ||
+        !body || !tab || !coveringTabClone ||
         !backdrop || !nav || !panel || !interior || !strip || !closeTab ||
-        !tabClone || !tabCloneOpen || !cover || !coverFill || !coverClone
+        !tabClone || !tabCloneOpen || !cover || !coverFill || !coverClone ||
+        !content
       ) {
         return null;
+      }
+
+      // Al abrirse entra el contenido.
+      const enterSteps = (at: number) =>
+        [...interior.querySelectorAll<HTMLElement>("[data-folder-enter]")].flatMap(
+          (el): FolderStep[] => {
+            const keyframes = ENTER_KEYFRAMES[el.dataset.folderEnter ?? ""];
+            if (!keyframes) return [];
+            return [{ el, keyframes, start: at + Number(el.dataset.folderDelay ?? 0), duration: CONTENT_MS }];
+          },
+        );
+
+      if (origin.card) {
+        for (const el of [cover, coverClone, tabClone, coveringTabClone]) {
+          el.style.display = "none";
+        }
+        return [
+          ...cardExpandSteps({
+            card: body,
+            panel,
+            fill: interior,
+            toColor: interiorColor,
+            content,
+            backdrop,
+            nav,
+            closeTab,
+          }),
+          ...enterSteps(CARD_CONTENT_AT),
+        ];
       }
 
       const first = body.getBoundingClientRect();
@@ -146,7 +186,7 @@ export default function BackFolderOverlay({
       // del panel sin escalar (el clip-path se aplica antes del transform). El
       // recorte solo actua abajo: hacia los otros lados deja margen para no
       // cortar las pestañas verticales, que sobresalen.
-      const cut = coveredBy.getBoundingClientRect().top;
+      const cut = coveredBy ? coveredBy.getBoundingClientRect().top : first.bottom;
       const hidden = Math.max(0, first.bottom - cut) / sy;
       const hiddenPulled = Math.max(0, first.bottom - PULL_PX - cut) / sy;
 
@@ -156,7 +196,11 @@ export default function BackFolderOverlay({
       // inferior izquierda se desplaza igual que ese punto de la carpeta al
       // crecer (el panel crece desde su esquina superior izquierda).
       const tabEndX = -tx + (tabRect.left - first.left) * (1 / sx - 1);
-      placeAt(coveringTabClone, coveredByTab.getBoundingClientRect());
+      if (coveredByTab) {
+        placeAt(coveringTabClone, coveredByTab.getBoundingClientRect());
+      } else {
+        coveringTabClone.style.display = "none";
+      }
       // La copia de la hoja del frente ocupa la parte visible de la carpeta
       // ya sacada del stack, con su tamaño real (doblarla dentro del panel
       // escalado la deformaria).
@@ -299,20 +343,7 @@ export default function BackFolderOverlay({
       ];
 
       // Al abrirse la tapa entra el contenido.
-      interior
-        .querySelectorAll<HTMLElement>("[data-folder-enter]")
-        .forEach((el) => {
-          const keyframes = ENTER_KEYFRAMES[el.dataset.folderEnter ?? ""];
-          if (!keyframes) return;
-          steps.push({
-            el,
-            keyframes,
-            start: EXPAND_END - 50 + Number(el.dataset.folderDelay ?? 0),
-            duration: CONTENT_MS,
-          });
-        });
-
-      return steps;
+      return [...steps, ...enterSteps(EXPAND_END - 50)];
     },
   });
 
@@ -333,7 +364,7 @@ export default function BackFolderOverlay({
 
       <div
         ref={panelRef}
-        className="absolute bottom-0 left-0 top-24 w-[calc(100%-3rem)] origin-top-left lg:top-28 lg:w-[83%]"
+        className="absolute bottom-0 left-0 top-16 w-[calc(100%-3rem)] origin-top-left sm:top-24 lg:top-28 lg:w-[83%]"
       >
         <div className="relative flex h-full">
           <div
@@ -341,7 +372,7 @@ export default function BackFolderOverlay({
             className="relative isolate flex-1 overflow-y-auto [scrollbar-width:none] lg:overflow-hidden [&::-webkit-scrollbar]:hidden"
             style={{ backgroundColor: interiorColor }}
           >
-            <PaperTexture />
+            <PaperTexture texture={texture} />
             <div ref={contentRef}>{children}</div>
           </div>
 
@@ -357,7 +388,7 @@ export default function BackFolderOverlay({
               className="absolute inset-0 rounded-b-md"
               style={{ backgroundColor: coverColor }}
             />
-            <PaperTexture />
+            <PaperTexture texture={texture} />
           </div>
 
           {/* Borde de la carpeta con la pestaña vertical, que cierra la vista. */}
@@ -366,7 +397,7 @@ export default function BackFolderOverlay({
             className="relative w-5 shrink-0"
             style={{ backgroundColor: accent }}
           >
-            <PaperTexture />
+            <PaperTexture texture={texture} />
             {sideTabs}
             <button
               ref={closeRef}
@@ -398,7 +429,7 @@ export default function BackFolderOverlay({
         className="pointer-events-none fixed origin-bottom overflow-hidden rounded-b-md"
         style={{ backgroundColor: coverColor }}
       >
-        <PaperTexture />
+        <PaperTexture texture={texture} />
       </div>
 
       {/* Copia de la pestaña de la carpeta siguiente en el stack. */}

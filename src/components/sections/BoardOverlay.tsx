@@ -179,6 +179,7 @@ export default function BoardOverlay({
       renderLabel={(className) => <BoardLabel className={className} />}
       closedTabFill="#232323"
       accent="var(--color-naranja)"
+      texture="board"
       coverColor={COVER_COLOR}
       interiorColor={INTERIOR_COLOR}
       coveringTab={

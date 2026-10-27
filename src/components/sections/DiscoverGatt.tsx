@@ -5,8 +5,9 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import type { FocusEvent, RefObject } from "react";
 import FolderTab from "@/components/layout/FolderTab";
 import Paperclip from "@/components/layout/Paperclip";
-import PaperTexture from "@/components/layout/PaperTexture";
+import PaperTexture, { type FolderTexture } from "@/components/layout/PaperTexture";
 import CapitolPhoto, { CAPITOL_ASPECT } from "@/components/layout/CapitolPhoto";
+import DiscoverCard from "@/components/sections/DiscoverCard";
 import AboutUsOverlay from "@/components/sections/AboutUsOverlay";
 import type { BackFolderOrigin } from "@/components/layout/BackFolderOverlay";
 import BoardOverlay from "@/components/sections/BoardOverlay";
@@ -25,6 +26,7 @@ type BackFolder = {
   color: string;
   shade: string;
   offset: string;
+  texture: FolderTexture;
   // Inicio del contenido, que se muestra en la carpeta al resaltarla.
   preview?: string;
   // Imagen guardada en la carpeta que asoma por su borde superior al
@@ -44,15 +46,15 @@ const SHEET_TINT = "rgb(200 204 216 / 0.25)";
 // El orden es de atras hacia adelante. Todas se abren menos "Our community",
 // que aun no tiene contenido.
 const BACK_FOLDERS: BackFolder[] = [
-  { id: "community", lead: "Our", accent: "community", color: "var(--color-rojo)", shade: "var(--color-carpeta-1)", offset: "12px" },
-  { id: "board", lead: "The", accent: "gatt", trail: "Board", color: "var(--color-naranja)", shade: "var(--color-carpeta-2)", offset: "10%" },
+  { id: "community", lead: "Our", accent: "community", color: "var(--color-rojo)", shade: "var(--color-carpeta-1)", offset: "12px", texture: "community" },
+  { id: "board", lead: "The", accent: "gatt", trail: "Board", color: "var(--color-naranja)", shade: "var(--color-carpeta-2)", offset: "10%", texture: "board" },
   {
-    id: "mission", lead: "Our", accent: "mission", color: "var(--color-verde)", shade: "var(--color-carpeta-3)", offset: "12px",
+    id: "mission", lead: "Our", accent: "mission", color: "var(--color-verde)", shade: "var(--color-carpeta-3)", offset: "12px", texture: "mission",
     preview: "To bring together LGBTQ+ professionals and allies in international trade, fostering a community built on meaningful connections, professional development, and the exchange of knowledge.",
     peek: { src: "ourmission.jpeg", width: 613, height: 756, className: "left-[76%] w-[11%] min-w-[100px] -rotate-[4deg] rounded-md" },
   },
   {
-    id: "what-we-do", lead: "What We", accent: "do", color: "var(--color-amarillo)", shade: "var(--color-carpeta-4)", offset: "14%",
+    id: "what-we-do", lead: "What We", accent: "do", color: "var(--color-amarillo)", shade: "var(--color-carpeta-4)", offset: "14%", texture: "what-we-do",
     preview: "We bring together LGBTQ+ professionals and allies in international trade through conversations, professional connections, and opportunities to learn and grow. Our programs create space to exchange ideas, advance careers, and build lasting relationships across Washington’s trade community.",
     peek: { src: "whoweare.png", width: 1152, height: 3020, className: "left-[76%] w-[12%] min-w-[110px] rotate-[5deg]" },
   },
@@ -83,6 +85,30 @@ function TabLabel({
   );
 }
 
+// Titulo bajo cada tarjeta de celular: texto del tema y la palabra en
+// cursiva en el color de la carpeta.
+function CardTitle({
+  lead,
+  accent,
+  trail,
+  color,
+}: {
+  lead: string;
+  accent: string;
+  trail?: string;
+  color: string;
+}) {
+  return (
+    <>
+      {lead}{" "}
+      <span className="font-script inline-block px-1 text-[1.3em] leading-none" style={{ color }}>
+        {accent}
+      </span>
+      {trail && <> {trail}</>}
+    </>
+  );
+}
+
 export default function DiscoverGatt() {
   const [openFolder, setOpenFolder] = useState<
     "about" | "what-we-do" | "board" | "mission" | null
@@ -99,6 +125,18 @@ export default function DiscoverGatt() {
   const boardBodyRef = useRef<HTMLDivElement>(null);
   const missionTabRef = useRef<HTMLButtonElement>(null);
   const missionBodyRef = useRef<HTMLDivElement>(null);
+  // Tarjetas de celular: la vista abierta se anima desde ellas en vez del stack.
+  const [fromCards, setFromCards] = useState(false);
+  const cardAboutTabRef = useRef<HTMLButtonElement>(null);
+  const cardAboutBodyRef = useRef<HTMLDivElement>(null);
+  const cardAboutSheetRef = useRef<HTMLDivElement>(null);
+  const cardAboutPhotoRef = useRef<HTMLDivElement>(null);
+  const cardWhatWeDoTabRef = useRef<HTMLButtonElement>(null);
+  const cardWhatWeDoBodyRef = useRef<HTMLDivElement>(null);
+  const cardMissionTabRef = useRef<HTMLButtonElement>(null);
+  const cardMissionBodyRef = useRef<HTMLDivElement>(null);
+  const cardBoardTabRef = useRef<HTMLButtonElement>(null);
+  const cardBoardBodyRef = useRef<HTMLDivElement>(null);
   const bodyRefs: Record<string, RefObject<HTMLDivElement | null>> = {
     "what-we-do": whatWeDoBodyRef,
     board: boardBodyRef,
@@ -140,6 +178,7 @@ export default function DiscoverGatt() {
   const shifted = (index: number) => revealIndex !== -1 && index > revealIndex;
   const close = useCallback(() => {
     setOpenFolder(null);
+    setFromCards(false);
     setMouseOver(null);
     setFocused(null);
   }, []);
@@ -175,6 +214,33 @@ export default function DiscoverGatt() {
     [],
   );
 
+  const cardAboutOrigin = useMemo<FolderOrigin>(
+    () => ({
+      body: cardAboutBodyRef,
+      sheet: cardAboutSheetRef,
+      tab: cardAboutTabRef,
+      photo: cardAboutPhotoRef,
+      card: true,
+    }),
+    [],
+  );
+  const cardWhatWeDoOrigin = useMemo<BackFolderOrigin>(
+    () => ({ body: cardWhatWeDoBodyRef, tab: cardWhatWeDoTabRef, card: true }),
+    [],
+  );
+  const cardMissionOrigin = useMemo<BackFolderOrigin>(
+    () => ({ body: cardMissionBodyRef, tab: cardMissionTabRef, card: true }),
+    [],
+  );
+  const cardBoardOrigin = useMemo<BackFolderOrigin>(
+    () => ({ body: cardBoardBodyRef, tab: cardBoardTabRef, card: true }),
+    [],
+  );
+  const openFromCard = (id: "about" | "what-we-do" | "mission" | "board") => {
+    setFromCards(true);
+    setOpenFolder(id);
+  };
+
   return (
     <section
       id="discover-gatt"
@@ -199,7 +265,7 @@ export default function DiscoverGatt() {
             su pestaña. --step es la separacion entre carpetas y --front el
             alto del cuerpo de la carpeta del frente. */}
         <div
-          className="relative w-full lg:w-auto lg:flex-1 [--front:360px] [--reveal:130px] [--step:64px] lg:[--front:290px] lg:[--reveal:140px] lg:[--step:88px]"
+          className="relative hidden w-full md:block lg:w-auto lg:flex-1 [--front:360px] [--reveal:130px] [--step:64px] lg:[--front:290px] lg:[--reveal:140px] lg:[--step:88px]"
           style={{ height: "calc(var(--step) * 4 + 2.5rem + var(--front))" }}
         >
           {BACK_FOLDERS.map((folder, i) => {
@@ -295,15 +361,23 @@ export default function DiscoverGatt() {
                       className={`absolute inset-0 transition-opacity duration-300 ${lit ? "opacity-100" : "opacity-0"}`}
                       style={{ backgroundColor: SHEET_TINT }}
                     />
+                    {/* En gris la textura apenas se nota; completa al resaltarla. */}
+                    <PaperTexture
+                      texture={folder.texture}
+                      className={`transition-opacity duration-300 ${lit ? "" : "opacity-40"}`}
+                    />
+                    {/* Alineado como el texto de About us. */}
                     {folder.preview && (
-                      <p
-                        aria-hidden="true"
-                        className={`relative mx-auto max-w-[560px] px-6 pt-5 text-center font-serif text-[16px] font-light leading-[1.3] text-white transition-opacity sm:px-10 lg:px-0 lg:pt-7 lg:text-[18px] ${
-                          lit ? "opacity-100 delay-200 duration-400" : "opacity-0 duration-200"
-                        }`}
-                      >
-                        {folder.preview}
-                      </p>
+                      <div className="relative px-6 pt-5 sm:px-10 lg:pl-[24%] lg:pr-10 lg:pt-12">
+                        <p
+                          aria-hidden="true"
+                          className={`max-w-[560px] font-serif text-[16px] font-light leading-[1.3] text-white transition-opacity lg:text-[18px] ${
+                            lit ? "opacity-100 delay-200 duration-400" : "opacity-0 duration-200"
+                          }`}
+                        >
+                          {folder.preview}
+                        </p>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -358,14 +432,14 @@ export default function DiscoverGatt() {
               {/* Foto metida en la carpeta: queda detras de la hoja. */}
               <div
                 ref={photoRef}
-                className={`absolute left-[52%] top-[-120px] w-[17%] min-w-[140px] shadow-lg transition-[opacity,translate,rotate] lg:left-[42%] ${
+                className={`absolute left-[62%] top-[-120px] w-[17%] min-w-[115px] shadow-lg transition-[opacity,translate,rotate] sm:left-[52%] sm:min-w-[140px] lg:left-[42%] ${
                   photoTucked
                     ? "translate-y-[150px] -rotate-12 opacity-0 duration-400 ease-in"
                     : "-rotate-12 opacity-100 duration-600 ease-out"
                 }`}
               >
                 <CapitolPhoto
-                  sizes="(min-width: 1024px) 17vw, 140px"
+                  sizes="(min-width: 1024px) 17vw, (min-width: 640px) 140px, 115px"
                   className={`${CAPITOL_ASPECT} w-full`}
                 />
               </div>
@@ -375,7 +449,7 @@ export default function DiscoverGatt() {
                 className="absolute inset-x-0 bottom-0 top-3 z-10 overflow-hidden rounded-b-md"
                 style={{ background: SHEET_BACKGROUND }}
               >
-                <PaperTexture />
+                <PaperTexture texture="about-us" />
                 {/* Hoja oscura cuando se resalta otra carpeta. */}
                 <div
                   aria-hidden="true"
@@ -427,7 +501,7 @@ export default function DiscoverGatt() {
                   foto se guarda dentro (baja detras de la hoja) para no quedar
                   encima, y al cerrarla vuelve a salir y el clip se engancha. */}
               <Paperclip
-                className={`absolute left-[calc(52%+100px)] top-[-34px] z-20 h-24 w-8 rotate-6 transition-[opacity,translate] lg:left-[calc(42%+min(12%,180px))] ${
+                className={`absolute left-[calc(62%+80px)] top-[-34px] z-20 h-24 w-8 rotate-6 transition-[opacity,translate] sm:left-[calc(52%+100px)] lg:left-[calc(42%+min(12%,180px))] ${
                   photoTucked
                     ? "translate-y-6 opacity-0 duration-200 ease-in"
                     : "opacity-100 delay-350 duration-300 ease-out"
@@ -436,27 +510,117 @@ export default function DiscoverGatt() {
             </div>
           </div>
         </div>
+
+        {/* En celular el stack no cabe: cada carpeta es una tarjeta. */}
+        <div className="flex flex-col gap-12 px-6 md:hidden">
+          <DiscoverCard
+            color="var(--color-azul)"
+            label={<TabLabel lead="About" accent="us" color="#ffffff" />}
+            title={<CardTitle lead="About" accent="us" color="var(--color-azul)" />}
+            tagline="Since 1986 in Washington, D.C."
+            leadPhoto={
+              <div
+                ref={cardAboutPhotoRef}
+                className="absolute left-[6%] top-5 w-[34%] -rotate-12 shadow-md"
+              >
+                <CapitolPhoto
+                  sizes="130px"
+                  className={`${CAPITOL_ASPECT} w-full rounded-lg`}
+                />
+              </div>
+            }
+            photos={[
+              { src: "eventonetworking.png", alt: "" },
+              { src: "whoweare.png", alt: "" },
+            ]}
+            onOpen={() => openFromCard("about")}
+            isOpen={fromCards && open}
+            tabRef={cardAboutTabRef}
+            bodyRef={cardAboutBodyRef}
+            sheetRef={cardAboutSheetRef}
+          />
+          <DiscoverCard
+            color="var(--color-amarillo)"
+            label={<TabLabel lead="What We" accent="do" color="#ffffff" />}
+            title={<CardTitle lead="What We" accent="do" color="var(--color-amarillo)" />}
+            tagline="Dialogue, connections and career growth"
+            photos={[
+              { src: "whoweare.png", alt: "" },
+              { src: "eventonetworking.png", alt: "" },
+              { src: "capitolio.png", alt: "" },
+            ]}
+            onOpen={() => openFromCard("what-we-do")}
+            isOpen={fromCards && whatWeDoOpen}
+            tabRef={cardWhatWeDoTabRef}
+            bodyRef={cardWhatWeDoBodyRef}
+          />
+          <DiscoverCard
+            color="var(--color-verde)"
+            label={<TabLabel lead="Our" accent="mission" color="#ffffff" />}
+            title={<CardTitle lead="Our" accent="mission" color="var(--color-verde)" />}
+            tagline="Why we bring people together"
+            photos={[
+              { src: "eventonetworking.png", alt: "" },
+              { src: "ourmission.jpeg", alt: "" },
+              { src: "whoweare.png", alt: "" },
+            ]}
+            onOpen={() => openFromCard("mission")}
+            isOpen={fromCards && openFolder === "mission"}
+            tabRef={cardMissionTabRef}
+            bodyRef={cardMissionBodyRef}
+          />
+          <DiscoverCard
+            color="var(--color-naranja)"
+            label={<TabLabel lead="The" accent="gatt" trail="Board" color="#ffffff" />}
+            title={<CardTitle lead="The" accent="gatt" trail="Board" color="var(--color-naranja)" />}
+            tagline="Meet the 2026 board"
+            photos={[
+              { src: "Alexa.png", alt: "" },
+              { src: "Ryan.png", alt: "" },
+              { src: "Jordan.png", alt: "" },
+            ]}
+            onOpen={() => openFromCard("board")}
+            isOpen={fromCards && openFolder === "board"}
+            tabRef={cardBoardTabRef}
+            bodyRef={cardBoardBodyRef}
+          />
+          <DiscoverCard
+            color="var(--color-rojo)"
+            label={<TabLabel lead="Our" accent="community" color="#ffffff" />}
+            title={<CardTitle lead="Our" accent="community" color="var(--color-rojo)" />}
+            tagline="Coming soon"
+            photos={[
+              { src: "eventonetworking.png", alt: "" },
+              { src: "Santiago.png", alt: "" },
+              { src: "Thomas.png", alt: "" },
+            ]}
+          />
+        </div>
       </div>
 
-      <AboutUsOverlay open={open} onClose={close} origin={origin} />
+      <AboutUsOverlay
+        open={open}
+        onClose={close}
+        origin={fromCards ? cardAboutOrigin : origin}
+      />
       <WhatWeDoOverlay
         open={whatWeDoOpen}
         onClose={close}
-        origin={whatWeDoOrigin}
-        highlighted={hovered === "what-we-do"}
+        origin={fromCards ? cardWhatWeDoOrigin : whatWeDoOrigin}
+        highlighted={fromCards || hovered === "what-we-do"}
         aboutDimmed={aboutDimmed}
       />
       <BoardOverlay
         open={openFolder === "board"}
         onClose={close}
-        origin={boardOrigin}
-        highlighted={hovered === "board"}
+        origin={fromCards ? cardBoardOrigin : boardOrigin}
+        highlighted={fromCards || hovered === "board"}
       />
       <MissionOverlay
         open={openFolder === "mission"}
         onClose={close}
-        origin={missionOrigin}
-        highlighted={hovered === "mission"}
+        origin={fromCards ? cardMissionOrigin : missionOrigin}
+        highlighted={fromCards || hovered === "mission"}
       />
     </section>
   );

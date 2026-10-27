@@ -68,6 +68,7 @@ export default function WhatWeDoOverlay({
       renderLabel={(className) => <WhatWeDoLabel className={className} />}
       closedTabFill="#2b2b2b"
       accent="var(--color-amarillo)"
+      texture="what-we-do"
       coverColor={COVER_COLOR}
       interiorColor={OPEN_FOLDER_COLOR}
       coveringTab={

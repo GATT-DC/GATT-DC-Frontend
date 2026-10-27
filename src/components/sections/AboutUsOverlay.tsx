@@ -11,7 +11,10 @@ import PaperTexture from "@/components/layout/PaperTexture";
 import { useFitContent } from "@/components/layout/useFitContent";
 import CapitolPhoto, { CAPITOL_ASPECT } from "@/components/layout/CapitolPhoto";
 import {
+  CARD_CONTENT_AT,
+  CARD_TOTAL_MS,
   FOLDER_EASE,
+  cardExpandSteps,
   placeAt,
   useFolderSequence,
   type FolderStep,
@@ -40,6 +43,8 @@ export type FolderOrigin = {
   sheet: RefObject<HTMLDivElement | null>;
   tab: RefObject<HTMLButtonElement | null>;
   photo: RefObject<HTMLDivElement | null>;
+  // Viene de una tarjeta de celular: se abre con la animacion de tarjeta.
+  card?: boolean;
 };
 
 // Duracion total de la secuencia de apertura (el cierre la recorre al reves).
@@ -78,7 +83,7 @@ export default function AboutUsOverlay({
   const requestClose = useFolderSequence({
     open,
     onClose,
-    totalMs: TOTAL_MS,
+    totalMs: origin.card ? CARD_TOTAL_MS : TOTAL_MS,
     closeRef,
     returnFocusRef: origin.tab,
     buildSteps: () => {
@@ -98,12 +103,46 @@ export default function AboutUsOverlay({
       const coverClone = coverCloneRef.current;
       const tabClone = tabCloneRef.current;
       const photoClone = photoCloneRef.current;
+      const content = contentRef.current;
       if (
         !body || !sheet || !tab || !photo || !backdrop || !nav || !panel || !panelFill ||
         !text || !photo1 || !photo2 || !closeTab || !clip || !coverClone ||
-        !tabClone || !photoClone
+        !tabClone || !photoClone || !content
       ) {
         return null;
+      }
+
+      if (origin.card) {
+        for (const el of [coverClone, tabClone, photoClone]) {
+          el.style.display = "none";
+        }
+        const rise: Keyframe[] = [
+          { opacity: 0, transform: "translateY(20px)" },
+          { opacity: 1, transform: "none" },
+        ];
+        return [
+          ...cardExpandSteps({
+            card: body,
+            panel,
+            fill: panelFill,
+            toColor: OPEN_FOLDER_COLOR,
+            content,
+            backdrop,
+            nav,
+            closeTab,
+          }),
+          { el: text, keyframes: rise, start: CARD_CONTENT_AT, duration: 450 },
+          { el: photo2, keyframes: rise, start: CARD_CONTENT_AT + 80, duration: 400 },
+          {
+            el: clip,
+            keyframes: [
+              { opacity: 0, transform: "translateY(-12px)" },
+              { opacity: 1, transform: "none" },
+            ],
+            start: CARD_CONTENT_AT + 100,
+            duration: 350,
+          },
+        ];
       }
 
       // Cuerpo de la carpeta -> panel abierto.
@@ -273,7 +312,7 @@ export default function AboutUsOverlay({
 
       <div
         ref={panelRef}
-        className="absolute bottom-0 left-0 top-24 w-[calc(100%-3rem)] origin-top-left lg:top-28 lg:w-[83%]"
+        className="absolute bottom-0 left-0 top-16 w-[calc(100%-3rem)] origin-top-left sm:top-24 lg:top-28 lg:w-[83%]"
       >
         <div className="relative flex h-full">
           <div
@@ -281,7 +320,7 @@ export default function AboutUsOverlay({
             className="relative flex-1 overflow-y-auto [scrollbar-width:none] lg:overflow-hidden [&::-webkit-scrollbar]:hidden"
             style={{ backgroundColor: OPEN_FOLDER_COLOR }}
           >
-            <PaperTexture />
+            <PaperTexture texture="about-us" />
             <div
               ref={contentRef}
               className="relative flex flex-col gap-10 px-6 py-12 sm:px-12 lg:flex-row lg:gap-12 lg:py-16 lg:pl-[8%] lg:pr-0"
@@ -327,7 +366,7 @@ export default function AboutUsOverlay({
 
           {/* Borde de la carpeta con la pestaña vertical, que cierra la vista. */}
           <div className="relative w-5 shrink-0 bg-azul">
-            <PaperTexture />
+            <PaperTexture texture="about-us" />
             <button
               ref={closeRef}
               type="button"
@@ -377,7 +416,7 @@ export default function AboutUsOverlay({
         className="pointer-events-none fixed origin-bottom overflow-hidden rounded-b-md"
         style={{ background: SHEET_BACKGROUND }}
       >
-        <PaperTexture />
+        <PaperTexture texture="about-us" />
         <div className="relative flex h-full flex-col justify-center px-6 pb-10 sm:px-10 lg:pl-[24%] lg:pr-10">
           <p className="max-w-[560px] font-serif text-[17px] font-light leading-[1.3] text-white lg:text-[19px]">
             {PREVIEW}

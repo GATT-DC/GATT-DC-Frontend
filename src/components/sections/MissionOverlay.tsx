@@ -47,6 +47,7 @@ export default function MissionOverlay({
       renderLabel={(className) => <MissionLabel className={className} />}
       closedTabFill="#272727"
       accent="var(--color-verde)"
+      texture="mission"
       coverColor="var(--color-verde)"
       interiorColor={INTERIOR_COLOR}
       coveringTab={

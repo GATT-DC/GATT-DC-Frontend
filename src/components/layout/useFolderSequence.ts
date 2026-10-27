@@ -33,6 +33,78 @@ function playSteps(
   );
 }
 
+// Apertura desde las tarjetas de celular: en vez de sacar la carpeta del stack
+// y doblar su hoja (estilo desktop), la tarjeta crece hasta ocupar la vista
+// abierta, pasa a su color y luego entra el contenido. Al cerrar se encoge de
+// vuelta a la tarjeta.
+export const CARD_EASE = "cubic-bezier(0.32, 0.72, 0, 1)";
+export const CARD_EXPAND_MS = 550;
+// Momento en que empieza a entrar el contenido.
+export const CARD_CONTENT_AT = 380;
+export const CARD_TOTAL_MS = 900;
+
+export function cardExpandSteps({
+  card,
+  panel,
+  fill,
+  toColor,
+  content,
+  backdrop,
+  nav,
+  closeTab,
+}: {
+  card: HTMLElement;
+  panel: HTMLElement;
+  // Elemento con el color de fondo de la vista abierta.
+  fill: HTMLElement;
+  toColor: string;
+  content: HTMLElement;
+  backdrop: HTMLElement;
+  nav: HTMLElement;
+  closeTab: HTMLElement;
+}): FolderStep[] {
+  const first = card.getBoundingClientRect();
+  const last = panel.getBoundingClientRect();
+  const tx = first.left - last.left;
+  const ty = first.top - last.top;
+  const scale = `scale(${first.width / last.width}, ${first.height / last.height})`;
+  const fromColor = getComputedStyle(card).backgroundColor;
+
+  return [
+    {
+      el: panel,
+      keyframes: [{ transform: `translate(${tx}px, ${ty}px) ${scale}` }, { transform: "none" }],
+      start: 0,
+      duration: CARD_EXPAND_MS,
+      easing: CARD_EASE,
+    },
+    {
+      el: fill,
+      keyframes: [{ backgroundColor: fromColor }, { backgroundColor: toColor }],
+      start: 0,
+      duration: CARD_EXPAND_MS,
+    },
+    // El contenido no se ve mientras el panel esta escalado (se veria aplastado).
+    {
+      el: content,
+      keyframes: [{ opacity: 0 }, { opacity: 1 }],
+      start: CARD_CONTENT_AT,
+      duration: 300,
+    },
+    { el: backdrop, keyframes: [{ opacity: 0 }, { opacity: 1 }], start: 0, duration: 400 },
+    { el: nav, keyframes: [{ opacity: 0 }, { opacity: 1 }], start: 300, duration: 300 },
+    {
+      el: closeTab,
+      keyframes: [
+        { opacity: 0, transform: "translateX(-24px)" },
+        { opacity: 1, transform: "none" },
+      ],
+      start: CARD_EXPAND_MS - 50,
+      duration: 300,
+    },
+  ];
+}
+
 // Coloca un elemento `position: fixed` exactamente sobre un rectangulo.
 export function placeAt(el: HTMLElement, rect: DOMRect) {
   el.style.left = `${rect.left}px`;
