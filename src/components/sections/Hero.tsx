@@ -24,7 +24,7 @@ export default function Hero({ index }: { index: number }) {
               "LGBTQ+ Professionals",
               <span key="line-2">
                 <span
-                  className="font-script inline-block bg-clip-text px-2 text-[1.5em] tracking-[-0.005em] text-transparent"
+                  className="font-script inline-block bg-clip-text px-2 text-[1.5em] tracking-[-0.002em] text-transparent"
                   style={{ backgroundImage: rainbowGradient }}
                 >
                   in
