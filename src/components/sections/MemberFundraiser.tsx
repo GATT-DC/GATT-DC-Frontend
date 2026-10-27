@@ -34,13 +34,6 @@ const SPONSORS: { logo: string; lightLogo?: string; name: string }[] = [
   { logo: "4.png", name: "Cassidy Levy Kent" },
 ];
 
-// Novedades de la franja naranja (se desplaza en bucle).
-const NEWS = [
-  "300+ Active Members",
-  "5 New Members This Month",
-  "Welcome, New Members!",
-];
-
 const FILL_TRANSITION =
   "stroke-dasharray 1.8s cubic-bezier(0.65, 0, 0.35, 1) 0.2s";
 
@@ -244,20 +237,6 @@ export default function MemberFundraiser() {
                   className="h-auto w-full dark:hidden"
                 />
               )}
-            </span>
-          ))}
-        </Marquee>
-
-        <Marquee speed={85} className="mt-12 bg-naranja py-1.5">
-          {NEWS.map((item) => (
-            <span
-              key={item}
-              className="font-heading flex items-center whitespace-nowrap text-[18px] text-white lg:text-[20px]"
-            >
-              <span className="px-8">{item}</span>
-              <span aria-hidden="true" className="text-white/80">
-                ·
-              </span>
             </span>
           ))}
         </Marquee>
