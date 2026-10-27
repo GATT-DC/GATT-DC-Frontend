@@ -23,22 +23,21 @@ type Member = {
   role: string;
   photo: string;
   frame: string;
-  // Perfil de LinkedIn; mientras no exista, el boton no lleva a ningun lado.
-  linkedin?: string;
+  linkedin: string;
   // Adorno sobre la tarjeta (chinche o clip), como en el mockup.
   decoration?: "pin" | "clip";
 };
 
 const BOARD: Member[] = [
-  { name: "Alexa Burr", role: "Chair", photo: "Alexa.png", frame: "var(--color-morado)" },
-  { name: "Ryan Migeed", role: "Director of Financial Affairs", photo: "Ryan.png", frame: "var(--color-rojo)", decoration: "pin" },
-  { name: "Jordan Strickler", role: "Director of External Relations", photo: "Jordan.png", frame: "var(--color-azul)" },
-  { name: "Santiago Gomez", role: "Director of Event Planning", photo: "Santiago.png", frame: "var(--color-amarillo)", decoration: "clip" },
+  { name: "Alexa Burr", linkedin: "https://www.linkedin.com/in/alexa-burr/", role: "Chair", photo: "Alexa.png", frame: "var(--color-morado)" },
+  { name: "Ryan Migeed", linkedin: "https://www.linkedin.com/in/ryanmigeed/", role: "Director of Financial Affairs", photo: "Ryan.png", frame: "var(--color-rojo)", decoration: "pin" },
+  { name: "Jordan Strickler", linkedin: "https://www.linkedin.com/in/jordan-s-147092134/", role: "Director of External Relations", photo: "Jordan.png", frame: "var(--color-azul)" },
+  { name: "Santiago Gomez", linkedin: "https://www.linkedin.com/in/santiago1gomez/", role: "Director of Event Planning", photo: "Santiago.png", frame: "var(--color-amarillo)", decoration: "clip" },
 ];
 
 const ADVISORS: Member[] = [
-  { name: "Thomas Abrhams", role: "Senior Advisor", photo: "Thomas.png", frame: "#ffffff" },
-  { name: "Zachary Simmons", role: "Senior Advisor", photo: "ZACHARY.png", frame: "#ffffff" },
+  { name: "Thomas Abrhams", linkedin: "https://www.linkedin.com/in/thomas-abrams/", role: "Senior Advisor", photo: "Thomas.png", frame: "#ffffff" },
+  { name: "Zachary Simmons", linkedin: "https://www.linkedin.com/in/zachary-simmons-69a30753/", role: "Senior Advisor", photo: "ZACHARY.png", frame: "#ffffff" },
 ];
 
 // En desktop, --card (ancho de cada tarjeta) se ajusta al alto de la pantalla
@@ -89,18 +88,6 @@ function MemberCard({
   delay: number;
   advisor?: boolean;
 }) {
-  const linkedinIcon = (
-    <Image
-      src={`${IMAGE_DIR}/linkedin.png`}
-      alt=""
-      width={16}
-      height={16}
-      className="h-4 w-4"
-    />
-  );
-  const linkedinClass =
-    "absolute bottom-2 right-2 flex h-6 w-6 items-center justify-center rounded transition-transform hover:scale-110 focus-visible:scale-110";
-
   return (
     <li
       data-folder-enter="rise"
@@ -121,25 +108,21 @@ function MemberCard({
           />
         </div>
         <ArrowBadge color={advisor ? "#111111" : member.frame} />
-        {member.linkedin ? (
-          <a
-            href={member.linkedin}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`LinkedIn de ${member.name}`}
-            className={linkedinClass}
-          >
-            {linkedinIcon}
-          </a>
-        ) : (
-          <button
-            type="button"
-            aria-label={`LinkedIn de ${member.name}`}
-            className={linkedinClass}
-          >
-            {linkedinIcon}
-          </button>
-        )}
+        <a
+          href={member.linkedin}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`LinkedIn de ${member.name}`}
+          className="absolute bottom-2 right-2 flex h-6 w-6 items-center justify-center rounded transition-transform hover:scale-110 focus-visible:scale-110"
+        >
+          <Image
+            src={`${IMAGE_DIR}/linkedin.png`}
+            alt=""
+            width={16}
+            height={16}
+            className="h-4 w-4"
+          />
+        </a>
       </div>
       {member.decoration === "pin" && (
         <Pushpin className="pointer-events-none absolute -left-3 -top-6 z-10 h-10 w-9 -rotate-12 drop-shadow-[0_3px_3px_rgba(0,0,0,0.4)]" />
