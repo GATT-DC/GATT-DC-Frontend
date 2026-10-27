@@ -44,10 +44,10 @@ const SHEET_TINT = "rgb(200 204 216 / 0.25)";
 // El orden es de atras hacia adelante. Todas se abren menos "Our community",
 // que aun no tiene contenido.
 const BACK_FOLDERS: BackFolder[] = [
-  { id: "community", lead: "Our", accent: "community", color: "var(--color-rojo)", shade: "var(--color-carpeta-1)", offset: "0%" },
+  { id: "community", lead: "Our", accent: "community", color: "var(--color-rojo)", shade: "var(--color-carpeta-1)", offset: "12px" },
   { id: "board", lead: "The", accent: "gatt", trail: "Board", color: "var(--color-naranja)", shade: "var(--color-carpeta-2)", offset: "10%" },
   {
-    id: "mission", lead: "Our", accent: "mission", color: "var(--color-verde)", shade: "var(--color-carpeta-3)", offset: "0%",
+    id: "mission", lead: "Our", accent: "mission", color: "var(--color-verde)", shade: "var(--color-carpeta-3)", offset: "12px",
     preview: "To bring together LGBTQ+ professionals and allies in international trade, fostering a community built on meaningful connections, professional development, and the exchange of knowledge.",
     peek: { src: "ourmission.jpeg", width: 613, height: 756, className: "left-[76%] w-[11%] min-w-[100px] -rotate-[4deg] rounded-md" },
   },
@@ -184,10 +184,12 @@ export default function DiscoverGatt() {
       style={{ overflowX: "clip" }}
     >
       <div className="flex flex-col gap-10 lg:flex-row lg:items-end">
-        <h2 className="font-heading px-6 text-[48px] font-normal leading-none text-texto lg:flex lg:w-[13%] lg:shrink-0 lg:justify-center lg:px-0 lg:text-[72px]">
+        <h2 className="font-heading px-6 text-[48px] font-normal leading-none text-texto lg:flex lg:shrink-0 lg:justify-center lg:pl-10 lg:pr-2 lg:text-[72px]">
           <span className="lg:rotate-180 lg:[writing-mode:vertical-rl]">
             Discover{" "}
-            <span className="font-script inline-block px-1 text-[1.3em] leading-normal">
+            {/* En vertical el interlineado se vuelve ancho: en lg se ajusta
+                para que no separe el titulo de las carpetas. */}
+            <span className="font-script inline-block px-1 text-[1.3em] leading-normal lg:leading-none">
               gatt
             </span>
           </span>
