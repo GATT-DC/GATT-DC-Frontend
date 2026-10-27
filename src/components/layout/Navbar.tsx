@@ -40,10 +40,10 @@ export default function Navbar({ onMedia }: { onMedia?: boolean }) {
         <Image
           src="/images/landing/hero/Logo-gatt.png"
           alt="GATT DC"
-          width={160}
-          height={48}
+          width={213}
+          height={64}
           priority
-          className="h-12 w-auto"
+          className="h-16 w-auto"
         />
       </Link>
 
