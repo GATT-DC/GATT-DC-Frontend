@@ -23,7 +23,7 @@ export default function Description({ index }: { index: number }) {
       <div className="absolute inset-0 bg-black/50" />
 
       <div className="relative z-10 mx-auto max-w-5xl px-6 text-center sm:px-10">
-        <p className="font-heading font-normal leading-[1.1] text-white text-[48px]">
+        <p className="font-heading font-normal leading-[1.1] text-white text-[28px] sm:text-[40px] lg:text-[48px]">
           <StaggerText
             index={index}
             lines={[
@@ -34,7 +34,7 @@ export default function Description({ index }: { index: number }) {
               </span>,
               <span
                 key="global-commerce"
-                className="font-script -mt-11 inline-block bg-clip-text pl-6 pr-1 pt-4 text-[1.6em] leading-normal text-transparent"
+                className="font-script -mt-[0.57em] inline-block bg-clip-text pl-[0.3em] pr-1 pt-[0.2em] text-[1.6em] leading-normal text-transparent"
                 style={{ backgroundImage: rainbowGradient }}
               >
                 global commerce

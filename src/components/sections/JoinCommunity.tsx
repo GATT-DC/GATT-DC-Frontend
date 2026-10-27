@@ -37,10 +37,10 @@ export default function JoinCommunity() {
     <section
       id="join-community"
       ref={sectionRef}
-      className="relative flex min-h-svh flex-col bg-fondo pt-24"
+      className="relative flex min-h-svh flex-col bg-fondo pt-16 sm:pt-24"
     >
       {/* La seccion ocupa una pantalla completa: la franja queda bajo la
-          navbar (pt-24 = su alto) y el contenido se centra en el resto. */}
+          navbar (pt-16 / sm:pt-24 = su alto) y el contenido se centra en el resto. */}
       <Marquee speed={85} className="bg-naranja py-1.5">
         {NEWS.map((item) => (
           <span

@@ -35,7 +35,7 @@ export default function Navbar({ onMedia }: { onMedia?: boolean }) {
   }, [onMedia]);
 
   return (
-    <header className="pointer-events-none fixed inset-x-0 top-0 z-40 flex items-center justify-between px-6 py-4 sm:px-10">
+    <header className="pointer-events-none fixed inset-x-0 top-0 z-40 flex items-center justify-between gap-2 px-4 py-3 sm:px-10 sm:py-4">
       <Link href="/" className="pointer-events-auto shrink-0">
         <Image
           src="/images/landing/hero/Logo-gatt.png"
@@ -43,20 +43,20 @@ export default function Navbar({ onMedia }: { onMedia?: boolean }) {
           width={213}
           height={64}
           priority
-          className="h-16 w-auto"
+          className="h-9 w-auto sm:h-16"
         />
       </Link>
 
-      <div className="pointer-events-auto flex items-center gap-4">
+      <div className="pointer-events-auto flex items-center gap-1 sm:gap-4">
         <Link
           href="#join-community"
-          className="flex items-center gap-2 rounded-full bg-primario px-5 py-2.5 font-ui text-[16px] text-white transition-colors hover:bg-primario-hover"
+          className="flex items-center gap-2 whitespace-nowrap rounded-full bg-primario px-3.5 py-2 font-ui text-[13px] text-white transition-colors hover:bg-primario-hover sm:px-5 sm:py-2.5 sm:text-[16px]"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
             fill="currentColor"
-            className="h-4 w-4"
+            className="hidden h-4 w-4 sm:block"
             aria-hidden="true"
           >
             <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.42 0-8 2.24-8 5v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2c0-2.76-3.58-5-8-5Z" />
