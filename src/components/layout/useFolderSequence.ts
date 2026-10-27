@@ -109,7 +109,13 @@ export function useFolderSequence({
     const root = document.documentElement;
     const previousOverflow = root.style.overflow;
     root.style.overflow = "hidden";
-    closeRef.current?.focus();
+    // El anillo de foco solo se muestra si la carpeta se abrio con teclado;
+    // con el mouse el navegador lo pintaria igual en el primer foco.
+    // (focusVisible aun no esta en los tipos DOM de TypeScript.)
+    const focusOptions: FocusOptions & { focusVisible: boolean } = {
+      focusVisible: returnTo?.matches(":focus-visible") ?? false,
+    };
+    closeRef.current?.focus(focusOptions);
 
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") requestClose();
