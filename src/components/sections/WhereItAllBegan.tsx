@@ -89,80 +89,46 @@ const IMAGE_WIDTH = "lg:w-[min(72vw,120vh)]";
 const SLIDE_GAP_PX = 160;
 
 // Recorrido vertical por cada transicion entre slides (mas alto = mas lento).
-const SLIDE_SCROLL_VH = 1.65;
-// Fraccion de cada tramo en la que el slide se queda quieto antes de cruzar.
-const SLIDE_HOLD = 0.32;
-// Interpolacion del desplazamiento horizontal (1 = sigue el scroll al instante).
-const LERP = 0.12;
-
-function smoothstep(t: number) {
-  return t * t * (3 - 2 * t);
-}
-
-// Convierte el progreso 0..1 del scroll en un indice 0..last, con pausa en
-// cada slide y cruce suave (sin saltos ni snap).
-function slideOffset(progress: number, last: number) {
-  const x = progress * last;
-  const index = Math.min(last, Math.floor(x));
-  if (index >= last) return last;
-  const local = x - index;
-  if (local <= SLIDE_HOLD) return index;
-  return index + smoothstep((local - SLIDE_HOLD) / (1 - SLIDE_HOLD));
-}
+const SLIDE_SCROLL_VH = 1;
 
 export default function WhereItAllBegan() {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
 
-  // El scroll vertical nativo mueve los slides en horizontal, interpolado
-  // para que el cruce no vaya atado 1:1 al gesto.
+  // El scroll vertical nativo mueve los slides en horizontal de forma lineal,
+  // como un scroll normal pero de lado.
   useEffect(() => {
     const last = SLIDES.length - 1;
-    let current = 0;
-    let target = 0;
     let frame = 0;
 
-    function measure() {
-      const wrapper = wrapperRef.current;
-      if (!wrapper) return;
-      const rect = wrapper.getBoundingClientRect();
-      const scrollable = rect.height - window.innerHeight;
-      const progress =
-        scrollable > 0 ? Math.min(1, Math.max(0, -rect.top / scrollable)) : 0;
-      target = slideOffset(progress, last);
-    }
-
-    function apply(offset: number) {
+    function update() {
+      frame = 0;
       const wrapper = wrapperRef.current;
       const track = trackRef.current;
       const bar = barRef.current;
       if (!wrapper || !track || !bar) return;
+      const rect = wrapper.getBoundingClientRect();
+      const scrollable = rect.height - window.innerHeight;
+      const progress =
+        scrollable > 0 ? Math.min(1, Math.max(0, -rect.top / scrollable)) : 0;
+      const offset = progress * last;
       const step = wrapper.clientWidth + SLIDE_GAP_PX;
       track.style.transform = `translate3d(${-offset * step}px, 0, 0)`;
       bar.style.width = `${((1 + offset) / SLIDES.length) * 100}%`;
     }
 
-    function tick() {
-      current += (target - current) * LERP;
-      if (Math.abs(target - current) < 0.0008) current = target;
-      apply(current);
-      frame = current === target ? 0 : requestAnimationFrame(tick);
+    function requestUpdate() {
+      if (!frame) frame = requestAnimationFrame(update);
     }
 
-    function requestTick() {
-      measure();
-      if (!frame) frame = requestAnimationFrame(tick);
-    }
-
-    measure();
-    apply(target);
-    window.addEventListener("scroll", requestTick, { passive: true });
-    window.addEventListener("resize", requestTick);
+    update();
+    window.addEventListener("scroll", requestUpdate, { passive: true });
+    window.addEventListener("resize", requestUpdate);
     return () => {
       cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", requestTick);
-      window.removeEventListener("resize", requestTick);
+      window.removeEventListener("scroll", requestUpdate);
+      window.removeEventListener("resize", requestUpdate);
     };
   }, []);
 
