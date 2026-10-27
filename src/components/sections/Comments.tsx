@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import Pushpin from "@/components/layout/Pushpin";
 
 type BubbleShape = {
@@ -31,7 +31,7 @@ const SHAPES = {
     scale: 1.18,
     top: "17%",
     height: "64%",
-    padding: "lg:px-[8%]",
+    padding: "px-[8%]",
     pinDrop: "max(calc(2.3cqw + 6px), 22px)",
   },
   box: {
@@ -41,7 +41,7 @@ const SHAPES = {
     scale: 1,
     top: "0%",
     height: "76%",
-    padding: "lg:px-[5%]",
+    padding: "px-[5%]",
     pinDrop: "0px",
   },
   pill: {
@@ -51,7 +51,7 @@ const SHAPES = {
     scale: 1,
     top: "0%",
     height: "77%",
-    padding: "lg:px-[8%]",
+    padding: "px-[8%]",
     pinDrop: "0px",
   },
 } satisfies Record<string, BubbleShape>;
@@ -119,9 +119,141 @@ function initials(name: string) {
     .slice(0, 2);
 }
 
+// Margen lateral del contenido de cada forma en celular.
+const MOBILE_PADDING: Record<keyof typeof SHAPES, string> = {
+  box: "px-6",
+  pill: "px-11",
+  cloud: "px-[11%]",
+};
+
+// Alto de las burbujas de celular y cuanto se monta cada una sobre la
+// anterior (la cola de la de arriba queda encima de la siguiente).
+const MOBILE_BUBBLE_PX = 170;
+const MOBILE_OVERLAP_PX = 30;
+
+// Una cara de la burbuja de celular: la forma en su color y el contenido en
+// la zona de texto de la forma (fuera de la cola y de las ondas de la nube).
+function BubbleFace({
+  testimonial,
+  back = false,
+  children,
+}: {
+  testimonial: Testimonial;
+  back?: boolean;
+  children: ReactNode;
+}) {
+  const shape = SHAPES[testimonial.shape];
+  const accent = ACCENTS[testimonial.accent];
+  return (
+    <div
+      className="absolute inset-0 [backface-visibility:hidden]"
+      style={back ? { transform: "rotateY(180deg)" } : undefined}
+    >
+      <svg
+        viewBox={shape.viewBox}
+        preserveAspectRatio="none"
+        className="absolute inset-0 h-full w-full overflow-visible"
+        aria-hidden="true"
+      >
+        <path
+          d={shape.path}
+          vectorEffect="non-scaling-stroke"
+          strokeWidth={2}
+          // El borde solo en modo oscuro; en claro la forma va sin borde.
+          className="[stroke:transparent] dark:[stroke:var(--stroke)]"
+          style={{ fill: accent.fill, "--stroke": accent.stroke } as CSSProperties}
+        />
+      </svg>
+      <div
+        className={`absolute inset-x-0 top-[var(--top)] flex h-[var(--height)] items-center ${MOBILE_PADDING[testimonial.shape]}`}
+        style={{ "--top": shape.top, "--height": shape.height } as CSSProperties}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// Testimonio en celular: burbuja de dos caras con la misma forma que en
+// desktop. Al frente la persona; al tocarla gira y muestra el testimonio.
+function MobileBubble({
+  testimonial,
+  index,
+  pinned,
+  flipped,
+  onFlip,
+}: {
+  testimonial: Testimonial;
+  index: number;
+  pinned: boolean;
+  flipped: boolean;
+  onFlip: () => void;
+}) {
+  return (
+    <figure
+      className="relative w-full [perspective:1200px]"
+      style={{
+        height: MOBILE_BUBBLE_PX,
+        zIndex: TESTIMONIALS.length - index,
+        marginTop: index === 0 ? 0 : -MOBILE_OVERLAP_PX,
+      }}
+    >
+      {pinned && (
+        <Pushpin className="pointer-events-none absolute -top-9 left-1/2 z-10 h-12 w-10 -translate-x-1/2 drop-shadow-[0_4px_4px_rgba(0,0,0,0.35)]" />
+      )}
+      <button
+        type="button"
+        onClick={onFlip}
+        aria-pressed={flipped}
+        aria-label={flipped ? `Ocultar testimonio de ${testimonial.author}` : `Leer testimonio de ${testimonial.author}`}
+        className="relative block h-full w-full text-left transition-transform duration-700 ease-[cubic-bezier(0.4,0,0.2,1)] [transform-style:preserve-3d] motion-reduce:transition-none"
+        style={{ transform: flipped ? "rotateY(180deg)" : "none" }}
+      >
+        <BubbleFace testimonial={testimonial}>
+          <div className="flex w-full items-center gap-4">
+            <div
+              aria-hidden="true"
+              className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-200 to-rose-400 font-ui text-xl text-white"
+            >
+              {initials(testimonial.author)}
+            </div>
+            <div className="min-w-0">
+              <span className="font-heading block text-[22px] leading-tight text-white">
+                {testimonial.author}
+              </span>
+              <span className="mt-1.5 flex items-center gap-1.5 font-ui text-[13px] text-white/80">
+                Tap to read
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-3.5 w-3.5"
+                  aria-hidden="true"
+                >
+                  <path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5" />
+                </svg>
+              </span>
+            </div>
+          </div>
+        </BubbleFace>
+        <BubbleFace testimonial={testimonial} back>
+          <blockquote className="min-w-0 font-serif text-[14px] font-light leading-[1.3] text-white">
+            “{testimonial.quote}”
+          </blockquote>
+        </BubbleFace>
+      </button>
+    </figure>
+  );
+}
+
 export default function Comments() {
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
+  // Burbujas de celular volteadas (mostrando el testimonio).
+  const [flipped, setFlipped] = useState<number[]>([]);
   const pinRef = useRef<HTMLDivElement>(null);
   const firstRender = useRef(true);
 
@@ -160,7 +292,6 @@ export default function Comments() {
     return () => animation.cancel();
   }, [active]);
 
-  const activeAccent = ACCENTS[TESTIMONIALS[active].accent];
   const pinDrop = SHAPES[TESTIMONIALS[active].shape].pinDrop;
 
   return (
@@ -174,10 +305,29 @@ export default function Comments() {
       onFocus={() => setPaused(true)}
       onBlur={() => setPaused(false)}
     >
-      <div className="@container relative mx-auto w-full max-w-[1440px] px-6 lg:h-[clamp(480px,40vw,620px)] lg:px-0">
+      {/* En celular: todos los testimonios, cada uno con su forma. */}
+      <div className="mx-auto flex w-full max-w-[520px] flex-col px-5 lg:hidden">
+        {TESTIMONIALS.map((testimonial, i) => (
+          <MobileBubble
+            key={testimonial.quote}
+            testimonial={testimonial}
+            index={i}
+            pinned={i === 0}
+            flipped={flipped.includes(i)}
+            onFlip={() =>
+              setFlipped((list) =>
+                list.includes(i) ? list.filter((n) => n !== i) : [...list, i],
+              )
+            }
+          />
+        ))}
+      </div>
+
+      {/* En desktop: carrusel con las burbujas en abanico. */}
+      <div className="@container relative mx-auto hidden w-full max-w-[1440px] lg:block lg:h-[clamp(480px,40vw,620px)]">
         <div
           ref={pinRef}
-          className="pointer-events-none absolute top-[calc(-2.25rem+var(--pin-drop))] left-[44%] z-30 origin-bottom transition-[top] delay-200 duration-400 ease-in-out lg:left-[48%] lg:top-[calc(40%-2.25rem+var(--pin-drop))]"
+          className="pointer-events-none absolute left-[48%] top-[calc(40%-2.25rem+var(--pin-drop))] z-30 origin-bottom transition-[top] delay-200 duration-400 ease-in-out"
           style={{ "--pin-drop": pinDrop } as CSSProperties}
         >
           <Pushpin className="h-14 w-12 drop-shadow-[0_4px_4px_rgba(0,0,0,0.35)]" />
@@ -194,9 +344,7 @@ export default function Comments() {
           return (
             <figure
               key={testimonial.quote}
-              className={`relative transition-[left,top,width] ease-in-out lg:absolute lg:left-[var(--x)] lg:top-[var(--y)] lg:block lg:w-[var(--w)] lg:aspect-[var(--ratio)] ${
-                isActive ? "block" : "hidden"
-              }`}
+              className="absolute left-[var(--x)] top-[var(--y)] aspect-[var(--ratio)] w-[var(--w)] transition-[left,top,width] ease-in-out"
               style={
                 {
                   "--x": `${position.cx - width / 2}%`,
@@ -228,7 +376,7 @@ export default function Comments() {
               </svg>
 
               <div
-                className={`relative flex items-center gap-5 px-6 pb-16 pt-10 lg:absolute lg:inset-x-0 lg:top-[var(--top)] lg:h-[var(--height)] lg:gap-[5%] lg:p-0 ${shape.padding}`}
+                className={`absolute inset-x-0 top-[var(--top)] flex h-[var(--height)] items-center gap-[5%] ${shape.padding}`}
                 style={{ "--top": shape.top, "--height": shape.height } as CSSProperties}
               >
                 <div
@@ -261,30 +409,13 @@ export default function Comments() {
                   type="button"
                   onClick={() => setActive(i)}
                   aria-label={`Ver testimonio de ${testimonial.author}`}
-                  className="absolute inset-0 hidden cursor-pointer lg:block"
+                  className="absolute inset-0 cursor-pointer"
                 />
               )}
             </figure>
           );
         })}
 
-        {/* Navegacion en celular, donde solo se ve el testimonio activo. */}
-        <div className="mt-6 flex justify-center gap-3 lg:hidden">
-          {TESTIMONIALS.map((testimonial, i) => (
-            <button
-              key={testimonial.quote}
-              type="button"
-              onClick={() => setActive(i)}
-              aria-label={`Ver testimonio ${i + 1}`}
-              aria-current={i === active}
-              className="h-2.5 w-2.5 rounded-full transition-colors"
-              style={{
-                backgroundColor:
-                  i === active ? activeAccent.fill : "color-mix(in srgb, var(--color-texto) 25%, transparent)",
-              }}
-            />
-          ))}
-        </div>
       </div>
     </section>
   );
