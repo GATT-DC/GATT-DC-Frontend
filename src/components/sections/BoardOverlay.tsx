@@ -36,7 +36,7 @@ const BOARD: Member[] = [
 ];
 
 const ADVISORS: Member[] = [
-  { name: "Thomas Abrhams", linkedin: "https://www.linkedin.com/in/thomas-abrams/", role: "Senior Advisor", photo: "Thomas.png", frame: "#ffffff" },
+  { name: "Thomas Abrahams", linkedin: "https://www.linkedin.com/in/thomas-abrams/", role: "Senior Advisor", photo: "Thomas.png", frame: "#ffffff" },
   { name: "Zachary Simmons", linkedin: "https://www.linkedin.com/in/zachary-simmons-69a30753/", role: "Senior Advisor", photo: "ZACHARY.png", frame: "#ffffff" },
 ];
 
