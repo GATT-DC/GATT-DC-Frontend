@@ -34,7 +34,7 @@ export default function Description({ index }: { index: number }) {
               </span>,
               <span
                 key="global-commerce"
-                className="font-script relative -top-11 inline-block bg-clip-text pl-6 pr-1 pt-4 text-[1.6em] leading-normal text-transparent"
+                className="font-script -mt-11 inline-block bg-clip-text pl-6 pr-1 pt-4 text-[1.6em] leading-normal text-transparent"
                 style={{ backgroundImage: rainbowGradient }}
               >
                 global commerce
