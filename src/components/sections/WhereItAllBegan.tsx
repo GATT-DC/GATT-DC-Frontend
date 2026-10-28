@@ -88,18 +88,137 @@ const IMAGE_WIDTH = "lg:w-[min(72vw,120vh)]";
 // Separacion horizontal entre slides mientras se desplazan.
 const SLIDE_GAP_PX = 160;
 
-// Recorrido vertical por cada transicion entre slides (mas alto = mas lento).
+// Recorrido vertical por cada transicion entre slides.
 const SLIDE_SCROLL_VH = 1;
+
+// Paso de un slide al siguiente: duracion y pausa sin rueda que se exige
+// antes de aceptar otro paso (la inercia del trackpad no encadena slides).
+const SNAP_MS = 1200;
+const WHEEL_QUIET_MS = 160;
+// Al acercarse a la seccion (desde History o desde Discover gatt) la pagina
+// se desliza sola hasta dejarla fija en el primer o ultimo slide, y hace
+// tope: para avanzar hay que soltar la rueda este tiempo y volver a girarla.
+const ENTRY_ZONE_VH = 0.6;
+const ENTRY_QUIET_MS = 300;
+// Espera tras el ultimo scroll (barra, teclado, touch) para acomodar el slide.
+const SETTLE_MS = 140;
+
+function easeInOutCubic(t: number) {
+  return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2;
+}
 
 export default function WhereItAllBegan() {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
 
-  // El scroll vertical nativo mueve los slides en horizontal de forma lineal,
-  // como un scroll normal pero de lado.
+  // Mientras la seccion esta fija, cada gesto pasa un slide completo con un
+  // desplazamiento suave: nunca queda a medio camino entre dos slides. El
+  // scroll vertical (animado) mueve los slides en horizontal.
   useEffect(() => {
     const last = SLIDES.length - 1;
+    let animation = 0;
+    let animating = false;
+    let lastWheelAt = 0;
+    let settleTimer = 0;
+    let entryLocked = false;
+
+    // Posiciones de scroll de la seccion: inicio y alto de cada slide.
+    function metrics() {
+      const wrapper = wrapperRef.current;
+      if (!wrapper) return null;
+      const top = wrapper.getBoundingClientRect().top + window.scrollY;
+      const stepY = (wrapper.offsetHeight - window.innerHeight) / last;
+      return { top, stepY, end: top + stepY * last };
+    }
+
+    function scrollToSlide(index: number) {
+      const m = metrics();
+      if (!m) return;
+      scrollToY(m.top + Math.max(0, Math.min(last, index)) * m.stepY, m.stepY);
+    }
+
+    // Desplazamiento animado de la pagina; la duracion es proporcional a la
+    // distancia (un slide completo dura SNAP_MS).
+    function scrollToY(to: number, stepY: number) {
+      const from = window.scrollY;
+      if (Math.abs(to - from) < 1) return;
+      cancelAnimationFrame(animation);
+      animating = true;
+      const start = performance.now();
+      const duration =
+        SNAP_MS * Math.min(1, Math.max(0.45, Math.abs(to - from) / stepY));
+      const tick = (now: number) => {
+        const t = Math.min(1, (now - start) / duration);
+        window.scrollTo(0, from + (to - from) * easeInOutCubic(t));
+        if (t < 1) {
+          animation = requestAnimationFrame(tick);
+        } else {
+          animating = false;
+        }
+      };
+      animation = requestAnimationFrame(tick);
+    }
+
+    // Slide actual (fraccionario) o null si la seccion no esta fija.
+    function position() {
+      const m = metrics();
+      if (!m) return null;
+      const y = window.scrollY;
+      if (y < m.top - 1 || y > m.end + 1) return null;
+      return (y - m.top) / m.stepY;
+    }
+
+    function handleWheel(e: WheelEvent) {
+      const now = performance.now();
+      const previousWheelAt = lastWheelAt;
+      const quiet = now - lastWheelAt > WHEEL_QUIET_MS;
+      lastWheelAt = now;
+      // Mientras la pagina se desliza sola no entra scroll nativo.
+      if (animating) {
+        e.preventDefault();
+        return;
+      }
+      const m = metrics();
+      if (!m || Math.abs(e.deltaY) < 1) return;
+      const down = e.deltaY > 0;
+      const y = window.scrollY;
+      const zone = window.innerHeight * ENTRY_ZONE_VH;
+
+      // Entrada: la seccion ya asoma y se sigue hacia ella.
+      if ((down && y < m.top - 1 && y >= m.top - zone) || (!down && y > m.end + 1 && y <= m.end + zone)) {
+        e.preventDefault();
+        entryLocked = true;
+        scrollToY(down ? m.top : m.end, m.stepY);
+        return;
+      }
+
+      const pos = position();
+      if (pos === null) return;
+      // En los extremos el scroll sigue normal hacia fuera de la seccion.
+      if ((down && pos >= last - 0.01) || (!down && pos <= 0.01)) {
+        entryLocked = false;
+        return;
+      }
+      e.preventDefault();
+      if (entryLocked) {
+        if (now - previousWheelAt < ENTRY_QUIET_MS) return;
+        entryLocked = false;
+      }
+      if (!quiet) return;
+      scrollToSlide(down ? Math.floor(pos + 0.01) + 1 : Math.ceil(pos - 0.01) - 1);
+    }
+
+    // Barra de scroll, teclado o touch: al terminar, acomoda el slide mas
+    // cercano.
+    function settle() {
+      if (animating) return;
+      const pos = position();
+      if (pos === null) return;
+      const nearest = Math.round(pos);
+      if (Math.abs(pos - nearest) > 0.005) scrollToSlide(nearest);
+    }
+
     let frame = 0;
 
     function update() {
@@ -122,12 +241,22 @@ export default function WhereItAllBegan() {
       if (!frame) frame = requestAnimationFrame(update);
     }
 
+    function handleScroll() {
+      requestUpdate();
+      window.clearTimeout(settleTimer);
+      if (!animating) settleTimer = window.setTimeout(settle, SETTLE_MS);
+    }
+
     update();
-    window.addEventListener("scroll", requestUpdate, { passive: true });
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("wheel", handleWheel, { passive: false });
     window.addEventListener("resize", requestUpdate);
     return () => {
       cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", requestUpdate);
+      cancelAnimationFrame(animation);
+      window.clearTimeout(settleTimer);
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("wheel", handleWheel);
       window.removeEventListener("resize", requestUpdate);
     };
   }, []);
