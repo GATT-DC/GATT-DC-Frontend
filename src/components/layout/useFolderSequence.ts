@@ -105,6 +105,20 @@ export function cardExpandSteps({
   ];
 }
 
+// Pone el foco en un elemento. Sin teclado de por medio el anillo de foco no
+// debe verse, pero Chrome ignora la opcion focusVisible y lo pinta igual: se
+// oculta con data-quiet-focus (ver globals.css) mientras dure ese foco.
+function focusQuietly(el: HTMLElement | null, visible: boolean) {
+  if (!el) return;
+  if (!visible) {
+    el.dataset.quietFocus = "";
+    el.addEventListener("blur", () => delete el.dataset.quietFocus, { once: true });
+  }
+  // (focusVisible aun no esta en los tipos DOM de TypeScript.)
+  const options: FocusOptions & { focusVisible: boolean } = { focusVisible: visible };
+  el.focus(options);
+}
+
 // Coloca un elemento `position: fixed` exactamente sobre un rectangulo.
 export function placeAt(el: HTMLElement, rect: DOMRect) {
   el.style.left = `${rect.left}px`;
@@ -181,13 +195,9 @@ export function useFolderSequence({
     const root = document.documentElement;
     const previousOverflow = root.style.overflow;
     root.style.overflow = "hidden";
-    // El anillo de foco solo se muestra si la carpeta se abrio con teclado;
-    // con el mouse el navegador lo pintaria igual en el primer foco.
-    // (focusVisible aun no esta en los tipos DOM de TypeScript.)
-    const focusOptions: FocusOptions & { focusVisible: boolean } = {
-      focusVisible: returnTo?.matches(":focus-visible") ?? false,
-    };
-    closeRef.current?.focus(focusOptions);
+    // El anillo de foco solo se muestra si la carpeta se abrio con teclado.
+    const keyboard = returnTo?.matches(":focus-visible") ?? false;
+    focusQuietly(closeRef.current, keyboard);
 
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") requestClose();
@@ -197,7 +207,7 @@ export function useFolderSequence({
     return () => {
       root.style.overflow = previousOverflow;
       window.removeEventListener("keydown", handleKeyDown);
-      returnTo?.focus();
+      focusQuietly(returnTo, keyboard);
     };
   }, [open, requestClose, closeRef, returnFocusRef]);
 
