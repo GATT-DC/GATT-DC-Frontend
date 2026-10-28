@@ -10,6 +10,14 @@ const SWIPE_THRESHOLD_PX = 30;
 // provocado por ese gesto. Fuera de ella (p. ej. arrastrando la barra de
 // scroll) no se fuerza ningun enganche.
 const GESTURE_WINDOW_MS = 1000;
+// Pausa sin rueda que separa un gesto del siguiente: la inercia del trackpad
+// (o seguir girando la rueda) no encadena secciones.
+const WHEEL_QUIET_MS = 160;
+// Al volver desde el contenido de abajo, la pagina se desliza sola hasta la
+// ultima seccion cuando esta ya ocupa esta fraccion de la pantalla, y hace
+// tope: para seguir subiendo hay que soltar la rueda este tiempo.
+const ENTRY_ZONE_VH = 0.6;
+const ENTRY_QUIET_MS = 300;
 
 export default function ScrollPager({
   sectionCount,
@@ -25,24 +33,35 @@ export default function ScrollPager({
   const touchStartedPastPaged = useRef(false);
   const lastScrollY = useRef(0);
   const lastGestureAt = useRef(0);
+  const lastWheelAt = useRef(0);
+  const entryLocked = useRef(false);
   const animationFrame = useRef(0);
 
   useEffect(() => {
     function goToIndex(index: number) {
       const clamped = Math.max(0, Math.min(sectionCount - 1, index));
       if (clamped === activeIndexRef.current) return;
-      isTransitioning.current = true;
       activeIndexRef.current = clamped;
       setActiveIndex(clamped);
+      // Al llegar se hace tope: la inercia del gesto no sigue de largo.
+      entryLocked.current = true;
+      scrollToY(clamped * window.innerHeight);
+    }
+
+    function scrollToY(to: number) {
+      isTransitioning.current = true;
       cancelAnimationFrame(animationFrame.current);
       const from = window.scrollY;
-      const to = clamped * window.innerHeight;
+      // Mas corto si el tramo es menor que una pantalla.
+      const duration =
+        TRANSITION_MS *
+        Math.min(1, Math.max(0.45, Math.abs(to - from) / window.innerHeight));
       const start = performance.now();
 
       // scrollTo "smooth" no deja fijar la duracion; el easing senoidal evita
       // el arranque y el corte bruscos entre los dos videos.
       function tick(now: number) {
-        const t = Math.min(1, (now - start) / TRANSITION_MS);
+        const t = Math.min(1, (now - start) / duration);
         const eased = -(Math.cos(Math.PI * t) - 1) / 2;
         window.scrollTo(0, from + (to - from) * eased);
         if (t < 1) {
@@ -68,7 +87,11 @@ export default function ScrollPager({
     }
 
     function handleWheel(e: WheelEvent) {
-      lastGestureAt.current = Date.now();
+      const now = Date.now();
+      const previousWheelAt = lastWheelAt.current;
+      const quiet = now - previousWheelAt > WHEEL_QUIET_MS;
+      lastGestureAt.current = now;
+      lastWheelAt.current = now;
       // Durante la transicion no se deja pasar scroll nativo: cortaria el
       // scroll suave hacia la seccion destino.
       if (isTransitioning.current) {
@@ -76,14 +99,37 @@ export default function ScrollPager({
         return;
       }
       const goingDown = e.deltaY > 0;
+      const pagedEnd = (sectionCount - 1) * window.innerHeight;
+      // Subiendo desde el contenido de abajo: llega deslizandose a la ultima
+      // seccion y se queda ahi.
+      if (
+        !goingDown &&
+        isPastPaged() &&
+        window.scrollY <= pagedEnd + window.innerHeight * ENTRY_ZONE_VH
+      ) {
+        e.preventDefault();
+        activeIndexRef.current = sectionCount - 1;
+        setActiveIndex(sectionCount - 1);
+        entryLocked.current = true;
+        scrollToY(pagedEnd);
+        return;
+      }
+      if (entryLocked.current && !isPastPaged()) {
+        if (now - previousWheelAt < ENTRY_QUIET_MS) {
+          e.preventDefault();
+          return;
+        }
+        entryLocked.current = false;
+      }
       if (isFreeScroll(goingDown)) return;
       e.preventDefault();
+      if (!quiet) return;
       goToIndex(activeIndexRef.current + (goingDown ? 1 : -1));
     }
 
     // Si el scroll nativo de un gesto (subiendo desde el contenido libre)
-    // cruza el tope de la ultima seccion paginada, se completa solo el paso a
-    // la seccion anterior para que no quede a medias. Sin gesto reciente
+    // cruza el tope de la ultima seccion paginada, se acomoda en esa seccion
+    // (sin seguir a la anterior) para que no quede a medias. Sin gesto reciente
     // (barra de scroll) solo se sincroniza la seccion activa con la posicion.
     function handleScroll() {
       const scrollY = window.scrollY;
@@ -105,7 +151,8 @@ export default function ScrollPager({
       const onLast = activeIndexRef.current === sectionCount - 1;
       const pagedEnd = (sectionCount - 1) * window.innerHeight;
       if (onLast && scrollY < pagedEnd - 1) {
-        goToIndex(activeIndexRef.current - 1);
+        entryLocked.current = true;
+        scrollToY(pagedEnd);
       }
     }
 
