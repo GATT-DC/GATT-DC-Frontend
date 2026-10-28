@@ -151,17 +151,24 @@ export default function DiscoverGatt() {
   // us pasa a oscuro. Mouse y foco se llevan por separado para que perder el
   // foco (p. ej. al hacer clic en otra carpeta) no borre el resaltado del
   // mouse. Mientras hay una carpeta abierta no cambian, para que la animacion
-  // de cierre termine sobre el mismo estado.
+  // de cierre termine sobre el mismo estado. Sin mouse ni foco queda resaltada
+  // la ultima carpeta elegida (al principio, About us).
   const [mouseOver, setMouseOver] = useState<string | null>(null);
   const [focused, setFocused] = useState<string | null>(null);
-  const hovered = mouseOver ?? focused;
+  const [selected, setSelected] = useState<string | null>(null);
+  const hovered = mouseOver ?? focused ?? selected;
   const highlight = (id: string | null) => {
-    if (!openFolder) setMouseOver(id);
+    if (openFolder) return;
+    setMouseOver(id);
+    if (id) setSelected(id);
   };
   // Con foco solo se resalta si viene del teclado (al cerrar una carpeta el
   // foco vuelve a su pestaña y no debe dejarla resaltada).
   const focusHighlight = (e: FocusEvent<HTMLElement>, id: string) => {
-    if (!openFolder && e.currentTarget.matches(":focus-visible")) setFocused(id);
+    if (!openFolder && e.currentTarget.matches(":focus-visible")) {
+      setFocused(id);
+      setSelected(id);
+    }
   };
   const focusClear = () => {
     if (!openFolder) setFocused(null);
@@ -336,9 +343,17 @@ export default function DiscoverGatt() {
                   {folder.peek && (
                     <div
                       aria-hidden="true"
-                      className={`absolute -top-24 overflow-hidden shadow-lg transition-[translate] ${folder.peek.className} ${
-                        lit ? "translate-y-0 duration-500 ease-out" : "translate-y-[120px] duration-400 ease-in"
+                      className={`absolute -top-24 overflow-hidden shadow-lg transition-[translate,opacity] ${folder.peek.className} ${
+                        isOpen
+                          ? "translate-y-[120px] opacity-0 ease-in [transition-duration:400ms,150ms]"
+                          : lit
+                            ? "translate-y-0 duration-500 ease-out"
+                            : "translate-y-[120px] duration-400 ease-in"
                       }`}
+                      // Mientras la carpeta esta abierta (oculta en el stack) la
+                      // imagen sigue visible para guardarse con transicion, y se
+                      // desvanece rapido: sin la hoja del frente se veria al bajar.
+                      style={{ visibility: "visible" }}
                     >
                       <Image
                         src={`/images/landing/discover-gatt/${folder.peek.src}`}
@@ -395,7 +410,7 @@ export default function DiscoverGatt() {
               top: shifted(4)
                 ? "calc(var(--step) * 4 + var(--reveal))"
                 : "calc(var(--step) * 4)",
-              visibility: open ? "hidden" : undefined,
+              opacity: open ? 0 : undefined,
             }}
           >
             <div className="pl-[1%]">
@@ -421,7 +436,8 @@ export default function DiscoverGatt() {
 
             <div
               ref={bodyRef}
-              className="pointer-events-auto relative flex-1 rounded-b-md rounded-tr-md transition-colors duration-300"
+              onClick={() => setOpenFolder("about")}
+              className="pointer-events-auto relative flex-1 cursor-pointer rounded-b-md rounded-tr-md transition-colors duration-300"
               style={{
                 backgroundColor: aboutDimmed ? ABOUT_DIMMED : "var(--color-azul)",
                 // La foto puede asomar por arriba, pero no salirse por abajo al
