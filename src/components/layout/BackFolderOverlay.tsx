@@ -74,6 +74,8 @@ export default function BackFolderOverlay({
   coveringTab,
   texture,
   sideTabs,
+  topEdge = false,
+  scroll = false,
   highlighted = false,
   children,
 }: {
@@ -91,6 +93,11 @@ export default function BackFolderOverlay({
   // Textura de la carpeta (interior, hoja del frente y borde).
   texture: FolderTexture;
   sideTabs?: ReactNode;
+  // Borde superior del color de la carpeta, como el del costado.
+  topEdge?: boolean;
+  // En desktop el contenido se desplaza (sin barra visible) en vez de
+  // reducirse para caber en el alto.
+  scroll?: boolean;
   // La pestaña ya estaba pintada de su color (hover) al abrir.
   highlighted?: boolean;
   children: ReactNode;
@@ -110,7 +117,7 @@ export default function BackFolderOverlay({
   const contentRef = useRef<HTMLDivElement>(null);
 
   // Antes que la secuencia: el contenido ya ajustado al alto de la carpeta.
-  useFitContent(open, interiorRef, contentRef);
+  useFitContent(open && !scroll, interiorRef, contentRef);
 
   const requestClose = useFolderSequence({
     open,
@@ -369,8 +376,8 @@ export default function BackFolderOverlay({
         <div className="relative flex h-full">
           <div
             ref={interiorRef}
-            className="relative isolate flex-1 overflow-y-auto [scrollbar-width:none] lg:overflow-hidden [&::-webkit-scrollbar]:hidden"
-            style={{ backgroundColor: interiorColor }}
+            className={`relative isolate flex-1 overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${scroll ? "" : "lg:overflow-hidden"} ${topEdge ? "border-t-[10px]" : ""}`}
+            style={{ backgroundColor: interiorColor, borderColor: accent }}
           >
             <PaperTexture texture={texture} />
             <div ref={contentRef}>{children}</div>

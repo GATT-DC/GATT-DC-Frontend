@@ -29,21 +29,20 @@ type Member = {
 };
 
 const BOARD: Member[] = [
-  { name: "Alexa Burr", linkedin: "https://www.linkedin.com/in/alexa-burr/", role: "Chair", photo: "Alexa.png", frame: "var(--color-morado)" },
-  { name: "Ryan Migeed", linkedin: "https://www.linkedin.com/in/ryanmigeed/", role: "Director of Financial Affairs", photo: "Ryan.png", frame: "var(--color-rojo)", decoration: "pin" },
+  { name: "Alexa Burr", linkedin: "https://www.linkedin.com/in/alexa-burr/", role: "Chair", photo: "Alexa.png", frame: "var(--color-morado)", decoration: "pin" },
+  { name: "Ryan Migeed", linkedin: "https://www.linkedin.com/in/ryanmigeed/", role: "Director of Financial Affairs", photo: "Ryan.png", frame: "var(--color-rojo)" },
   { name: "Jordan Strickler", linkedin: "https://www.linkedin.com/in/jordan-s-147092134/", role: "Director of External Relations", photo: "Jordan.png", frame: "var(--color-azul)" },
-  { name: "Santiago Gomez", linkedin: "https://www.linkedin.com/in/santiago1gomez/", role: "Director of Event Planning", photo: "Santiago.png", frame: "var(--color-amarillo)", decoration: "clip" },
+  { name: "Santiago Gomez", linkedin: "https://www.linkedin.com/in/santiago1gomez/", role: "Director of Event Planning", photo: "Santiago.png", frame: "var(--color-amarillo)" },
 ];
 
 const ADVISORS: Member[] = [
-  { name: "Thomas Abrahams", linkedin: "https://www.linkedin.com/in/thomas-abrams/", role: "Senior Advisor", photo: "Thomas.png", frame: "#ffffff" },
+  { name: "Thomas Abrams", linkedin: "https://www.linkedin.com/in/thomas-abrams/", role: "Senior Advisor", photo: "Thomas.png", frame: "#ffffff" },
   { name: "Zachary Simmons", linkedin: "https://www.linkedin.com/in/zachary-simmons-69a30753/", role: "Senior Advisor", photo: "ZACHARY.png", frame: "#ffffff" },
 ];
 
-// En desktop, --card (ancho de cada tarjeta) se ajusta al alto de la pantalla
-// para que la junta y los asesores quepan sin scroll, y el bloque de contenido
-// mide lo que el grupo de 4 tarjetas con su separacion.
-const CARD_GAP = "1.5rem";
+// En desktop la junta llena el ancho de la carpeta en 4 columnas (los
+// asesores usan las mismas) y la carpeta se desplaza a lo alto.
+const CARD_GAP = "clamp(1rem, 2.2vw, 2.5rem)";
 
 function BoardLabel({ className = "" }: { className?: string }) {
   return (
@@ -92,18 +91,21 @@ function MemberCard({
     <li
       data-folder-enter="rise"
       data-folder-delay={delay}
-      className="relative flex w-full flex-col items-center text-center lg:w-[var(--card)]"
+      className="relative flex w-full flex-col items-center text-center lg:w-full"
     >
       <div
-        className="relative w-full rounded-[10px] p-[5px]"
+        className="relative w-full rounded-[16px] p-[5px]"
         style={{ backgroundColor: member.frame }}
       >
-        <div className="relative aspect-[984/1264] overflow-hidden rounded-[7px] bg-neutral-700">
+        <div
+          className="relative aspect-[984/1264] overflow-hidden rounded-[11px]"
+          style={{ backgroundColor: member.frame }}
+        >
           <Image
             src={`${IMAGE_DIR}/${member.photo}`}
             alt={`Portrait of ${member.name}`}
             fill
-            sizes="(min-width: 1024px) 230px, 45vw"
+            sizes="(min-width: 1024px) 20vw, 45vw"
             className="object-cover"
           />
         </div>
@@ -113,14 +115,14 @@ function MemberCard({
           target="_blank"
           rel="noopener noreferrer"
           aria-label={`LinkedIn de ${member.name}`}
-          className="absolute bottom-2 right-2 flex h-6 w-6 items-center justify-center rounded transition-transform hover:scale-110 focus-visible:scale-110"
+          className="absolute bottom-2 right-2 flex h-7 w-7 items-center justify-center rounded transition-transform hover:scale-110 focus-visible:scale-110"
         >
           <Image
             src={`${IMAGE_DIR}/linkedin.png`}
             alt=""
-            width={16}
-            height={16}
-            className="h-4 w-4"
+            width={20}
+            height={20}
+            className="h-5 w-5"
           />
         </a>
       </div>
@@ -130,10 +132,10 @@ function MemberCard({
       {member.decoration === "clip" && (
         <Paperclip className="pointer-events-none absolute -right-4 -top-5 z-10 h-20 w-7 rotate-[8deg]" />
       )}
-      <p className="font-heading mt-2 text-[14px] uppercase leading-tight text-white lg:mt-1.5 lg:text-[15px]">
+      <p className="font-heading mt-2 text-[14px] uppercase leading-tight text-white lg:mt-2.5 lg:text-[18px]">
         {member.name}
       </p>
-      <p className="mt-1 w-full px-1 font-serif text-[13px] font-light leading-snug text-white/90 [overflow-wrap:anywhere]">
+      <p className="mt-1 w-full px-1 font-serif text-[13px] font-light leading-snug text-white/90 lg:text-[16px] [overflow-wrap:anywhere]">
         {member.role}
       </p>
     </li>
@@ -175,6 +177,8 @@ export default function BoardOverlay({
           </span>
         </FolderTab>
       }
+      topEdge
+      scroll
       sideTabs={
         <div aria-hidden="true">
           {PAST_BOARDS.map((years, i) => (
@@ -198,20 +202,14 @@ export default function BoardOverlay({
         </div>
       }
     >
-      <div className="relative px-6 py-10 sm:px-10 lg:px-[5%] lg:py-[clamp(1rem,3vh,2.25rem)]">
+      <div className="relative px-6 py-10 sm:px-10 lg:px-[5%] lg:pb-16 lg:pt-14">
         <div
-          className="lg:mx-auto lg:w-[min(100%,calc(var(--card)*4+var(--gap)*3))]"
-          style={
-            {
-              "--card": "clamp(140px, 19.6vh, 240px)",
-              "--gap": CARD_GAP,
-            } as CSSProperties
-          }
+          style={{ "--gap": CARD_GAP } as CSSProperties}
         >
           <div data-folder-enter="rise" className="text-center">
             <h2
               id="board-title"
-              className="font-heading text-[40px] font-normal leading-none text-white lg:text-[length:clamp(36px,5vh,52px)]"
+              className="font-heading text-[40px] font-normal leading-none text-white lg:text-[length:clamp(52px,5vw,80px)]"
             >
               The{" "}
               <span className="font-script inline-block px-1 text-[1.25em] leading-[0.9]">
@@ -219,10 +217,10 @@ export default function BoardOverlay({
               </span>{" "}
               Board
             </h2>
-            <p className="font-serif text-[15px] font-light text-white">2026</p>
+            <p className="font-serif text-[15px] font-light text-white lg:-mt-1 lg:text-[17px]">2026</p>
           </div>
 
-          <ul className="mt-8 grid grid-cols-2 gap-x-5 gap-y-6 lg:mt-[clamp(0.75rem,2.5vh,1.75rem)] lg:flex lg:gap-[var(--gap)]">
+          <ul className="mt-8 grid grid-cols-2 gap-x-5 gap-y-6 lg:mt-8 lg:grid-cols-4 lg:gap-x-[var(--gap)] lg:gap-y-8">
             {BOARD.map((member, i) => (
               <MemberCard key={member.name} member={member} delay={80 + i * 60} />
             ))}
@@ -231,13 +229,13 @@ export default function BoardOverlay({
           <hr
             data-folder-enter="rise"
             data-folder-delay={300}
-            className="mt-8 border-dashed border-white/25 lg:mt-[clamp(0.75rem,2.5vh,2rem)]"
+            className="mt-8 border-dashed border-white/25 lg:mt-12"
           />
 
           <h3
             data-folder-enter="rise"
             data-folder-delay={320}
-            className="font-heading mt-6 text-[22px] font-normal text-white lg:mt-[clamp(0.5rem,2vh,1.5rem)] lg:text-[24px]"
+            className="font-heading mt-6 text-[22px] font-normal text-white lg:mt-10 lg:text-[28px]"
           >
             Advisors to the{" "}
             <span className="font-script inline-block px-1 text-[1.3em] leading-none">
@@ -245,7 +243,7 @@ export default function BoardOverlay({
             </span>
           </h3>
 
-          <ul className="mt-5 grid grid-cols-2 gap-x-5 gap-y-6 lg:mt-[clamp(0.5rem,2vh,1.25rem)] lg:flex lg:gap-[var(--gap)]">
+          <ul className="mt-5 grid grid-cols-2 gap-x-5 gap-y-6 lg:mt-6 lg:grid-cols-4 lg:gap-x-[var(--gap)] lg:gap-y-8">
             {ADVISORS.map((member, i) => (
               <MemberCard
                 key={member.name}
