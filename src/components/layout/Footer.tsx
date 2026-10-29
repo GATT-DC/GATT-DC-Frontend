@@ -35,7 +35,7 @@ export default function Footer() {
       {/* Cada ilustracion tiene el mismo fondo que la pagina en su tema
           (#141414 en oscuro, blanco en claro). */}
       <Image
-        src="/images/fotter/washington_misma_ilustracion_4K.png"
+        src="/images/fotter/washington-negro-refinado.png"
         alt={ILLUSTRATION_ALT}
         width={3840}
         height={1645}
