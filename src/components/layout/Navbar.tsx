@@ -49,7 +49,7 @@ export default function Navbar({ onMedia }: { onMedia?: boolean }) {
 
       <div className="pointer-events-auto flex items-center gap-1 sm:gap-4">
         <Link
-          href="#join-community"
+          href="/register"
           className="flex items-center gap-2 whitespace-nowrap rounded-full bg-primario px-3.5 py-2 font-ui text-[13px] text-white transition-colors hover:bg-primario-hover sm:px-5 sm:py-2.5 sm:text-[16px]"
         >
           <svg

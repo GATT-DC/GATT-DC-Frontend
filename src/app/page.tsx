@@ -1,4 +1,5 @@
 import Footer from "@/components/layout/Footer";
+import IntroSplash from "@/components/layout/IntroSplash";
 import Navbar from "@/components/layout/Navbar";
 import ScrollPager from "@/components/layout/ScrollPager";
 import StackSection from "@/components/layout/StackSection";
@@ -17,6 +18,7 @@ const SECTION_COUNT = 2;
 export default function Home() {
   return (
     <>
+      <IntroSplash />
       <Navbar />
       <main>
         {/* Contenedor propio para que las secciones sticky se liberen al

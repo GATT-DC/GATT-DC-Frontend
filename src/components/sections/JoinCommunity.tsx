@@ -79,7 +79,7 @@ export default function JoinCommunity() {
           </p>
           <div style={reveal(450).style} className={`mt-7 ${reveal(450).className}`}>
             <a
-              href="#become-member"
+              href="/register"
               className="inline-block rounded-full bg-primario px-5 py-2 font-ui text-[15px] text-white transition-colors hover:bg-primario-hover"
             >
               Become a Member
