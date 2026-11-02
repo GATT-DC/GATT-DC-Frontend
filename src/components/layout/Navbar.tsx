@@ -4,12 +4,31 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import ThemeToggle from "@/components/layout/ThemeToggle";
+import { authClient } from "@/lib/auth-client";
+
+const PRIMARY_BUTTON =
+  "flex items-center gap-2 whitespace-nowrap rounded-full bg-primario px-3 py-2 font-ui text-[13px] text-white transition-colors hover:bg-primario-hover sm:px-5 sm:py-2.5 sm:text-[16px]";
+
+function PersonIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className="hidden h-4 w-4 sm:block"
+      aria-hidden="true"
+    >
+      <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.42 0-8 2.24-8 5v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2c0-2.76-3.58-5-8-5Z" />
+    </svg>
+  );
+}
 
 // onMedia: el navbar va sobre una imagen o video oscuro (Hero), asi que sus
 // iconos son siempre blancos; si no, siguen el color de texto del tema.
 export default function Navbar({ onMedia }: { onMedia?: boolean }) {
   const [overMedia, setOverMedia] = useState(onMedia ?? true);
   const iconColor = (onMedia ?? overMedia) ? "text-white" : "text-texto";
+  const { data: session } = authClient.useSession();
 
   // En la landing el color se deriva de si el Hero (video oscuro) sigue en
   // viewport. En overlays se pasa onMedia a mano y no se observa nada.
@@ -47,22 +66,28 @@ export default function Navbar({ onMedia }: { onMedia?: boolean }) {
         />
       </Link>
 
-      <div className="pointer-events-auto flex items-center gap-1 sm:gap-4">
-        <Link
-          href="/register"
-          className="flex items-center gap-2 whitespace-nowrap rounded-full bg-primario px-3.5 py-2 font-ui text-[13px] text-white transition-colors hover:bg-primario-hover sm:px-5 sm:py-2.5 sm:text-[16px]"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            className="hidden h-4 w-4 sm:block"
-            aria-hidden="true"
-          >
-            <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.42 0-8 2.24-8 5v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2c0-2.76-3.58-5-8-5Z" />
-          </svg>
-          Become a Member
-        </Link>
+      <div className="pointer-events-auto flex items-center gap-0.5 sm:gap-4">
+        {/* Con sesion iniciada se cambia el par de botones por "My Account". */}
+        {session ? (
+          <Link href="/account" className={PRIMARY_BUTTON}>
+            <PersonIcon />
+            My Account
+          </Link>
+        ) : (
+          <>
+            <Link
+              href="/login"
+              className={`whitespace-nowrap rounded-full border border-current px-2.5 py-[7px] font-ui text-[13px] transition-colors hover:bg-current/10 sm:px-5 sm:py-[9px] sm:text-[16px] ${iconColor}`}
+            >
+              Sign In
+            </Link>
+            <Link href="/register" className={PRIMARY_BUTTON}>
+              <PersonIcon />
+              <span className="sm:hidden">Join</span>
+              <span className="hidden sm:inline">Become a Member</span>
+            </Link>
+          </>
+        )}
 
         <button
           type="button"
