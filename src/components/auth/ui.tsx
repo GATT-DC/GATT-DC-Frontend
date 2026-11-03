@@ -1,9 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { useId } from "react";
+import { useId, useState } from "react";
 import type { ReactNode } from "react";
+import { authClient } from "@/lib/auth-client";
 import { CHARACTER_TYPES, MIN_LENGTH, REQUIRED_TYPES, checkPassword } from "@/lib/password";
+import { HOME_AFTER_LOGIN } from "@/lib/redirects";
 
 // Piezas compartidas por el registro, el inicio de sesion y el resto de
 // pantallas de cuenta, para que todas se vean igual.
@@ -208,8 +210,23 @@ export function SocialButton({
   );
 }
 
-// Separador "Or" y los botones de Google y LinkedIn.
-export function SocialOptions() {
+// Separador "Or" y los botones de Google y LinkedIn. Sirven tanto para
+// registrarse como para entrar: si la cuenta no existe, se crea y se pide
+// completar el perfil.
+export function SocialOptions({ next = HOME_AFTER_LOGIN }: { next?: string }) {
+  const [error, setError] = useState("");
+
+  async function continueWithGoogle() {
+    setError("");
+    const { error } = await authClient.signIn.social({
+      provider: "google",
+      callbackURL: next,
+      newUserCallbackURL: "/complete-profile",
+      errorCallbackURL: "/login",
+    });
+    if (error) setError("Signing in with Google isn't available right now. Try again later or use your email.");
+  }
+
   return (
     <>
       <div className="flex items-center gap-6 font-ui text-[14px] text-texto">
@@ -218,10 +235,17 @@ export function SocialOptions() {
         <span className="h-px flex-1 bg-texto/70" />
       </div>
       <div className="mt-6 space-y-3">
-        {/* Se conectan en la siguiente fase (Google y LinkedIn). */}
-        <SocialButton icon="google">Continue with Google</SocialButton>
+        <SocialButton icon="google" onClick={continueWithGoogle}>
+          Continue with Google
+        </SocialButton>
+        {/* Se conecta en la siguiente fase. */}
         <SocialButton icon="linkedin">Continue with LinkedIn</SocialButton>
       </div>
+      {error && (
+        <div className="mt-4">
+          <FormError>{error}</FormError>
+        </div>
+      )}
     </>
   );
 }

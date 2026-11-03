@@ -11,17 +11,21 @@ import { ApiError, type ProfileInput } from "@/lib/api";
 // completar el perfil (quien entra con Google o LinkedIn).
 export default function ProfileForm({
   before,
+  initial,
   submitLabel,
   onSubmit,
 }: {
+  // Valores con los que arranca el formulario (por ejemplo, el nombre que
+  // entrega Google).
+  initial?: { firstName?: string; lastName?: string };
   // Va encima de los campos (en el registro, el correo ya confirmado).
   before?: ReactNode;
   submitLabel: string;
   onSubmit: (profile: ProfileInput) => Promise<void>;
 }) {
   const [values, setValues] = useState({
-    firstName: "",
-    lastName: "",
+    firstName: initial?.firstName ?? "",
+    lastName: initial?.lastName ?? "",
     linkedinUrl: "",
     position: "",
     organization: "",

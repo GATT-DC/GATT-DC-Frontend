@@ -22,7 +22,7 @@ export default async function CompleteProfilePage() {
         title="Complete your profile"
         intro={`Welcome, ${user.name}. Tell us a bit about yourself to finish setting up your GATT account.`}
       >
-        <CompleteProfileForm />
+        <CompleteProfileForm name={user.name} />
       </AuthCard>
     </AuthPage>
   );

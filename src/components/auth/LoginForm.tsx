@@ -17,11 +17,25 @@ import { authClient } from "@/lib/auth-client";
 import { EMAIL_PATTERN } from "@/lib/password";
 
 // Inicio de sesion con correo y contraseña, o con un codigo por SMS.
-export default function LoginForm({ next, notice }: { next: string; notice?: string }) {
+export default function LoginForm({
+  next,
+  notice,
+  error,
+}: {
+  next: string;
+  notice?: string;
+  // Error que llega por la URL (por ejemplo, al volver de Google).
+  error?: string;
+}) {
   const [method, setMethod] = useState<"email" | "phone">("email");
 
   return (
     <div>
+      {error && (
+        <div className="mb-5">
+          <FormError>{error}</FormError>
+        </div>
+      )}
       <div role="tablist" aria-label="Sign in with" className="mb-6 grid grid-cols-2 rounded-full bg-texto/[0.06] p-1">
         {(["email", "phone"] as const).map((option) => (
           <button
@@ -42,7 +56,7 @@ export default function LoginForm({ next, notice }: { next: string; notice?: str
       {method === "email" ? <EmailLoginForm next={next} notice={notice} /> : <PhoneLoginForm next={next} />}
 
       <div className="pt-6">
-        <SocialOptions />
+        <SocialOptions next={next} />
         <p className="mt-7 text-center font-ui text-[14px] text-texto/55">
           Don&apos;t have an Account?{" "}
           <Link href="/register" className="ml-2 text-primario underline">
