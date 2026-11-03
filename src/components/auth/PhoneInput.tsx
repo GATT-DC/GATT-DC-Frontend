@@ -2,18 +2,33 @@
 
 import { getCountries, getCountryCallingCode, parsePhoneNumberFromString } from "libphonenumber-js";
 import type { CountryCode } from "libphonenumber-js";
-import { useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import { INPUT_CLASS } from "@/components/auth/ui";
 
-// Paises ordenados por nombre, con Estados Unidos primero (la mayoria de los
-// miembros estan alli).
 const DEFAULT_COUNTRY: CountryCode = "US";
-const regionNames = new Intl.DisplayNames(["en"], { type: "region" });
-const COUNTRIES = getCountries()
-  .map((code) => ({ code, name: regionNames.of(code) ?? code, dial: getCountryCallingCode(code) }))
-  .sort((a, b) =>
-    a.code === DEFAULT_COUNTRY ? -1 : b.code === DEFAULT_COUNTRY ? 1 : a.name.localeCompare(b.name),
+
+// Paises ordenados por nombre, con Estados Unidos primero (la mayoria de los
+// miembros estan alli). Los nombres salen de Intl, y Node y el navegador no
+// siempre los escriben igual (por ejemplo "Falkland Islands (Islas
+// Malvinas)"), asi que la lista completa solo se arma en el navegador.
+function buildCountries() {
+  const regionNames = new Intl.DisplayNames(["en"], { type: "region" });
+  return getCountries()
+    .map((code) => ({ code, name: regionNames.of(code) ?? code, dial: getCountryCallingCode(code) }))
+    .sort((a, b) =>
+      a.code === DEFAULT_COUNTRY ? -1 : b.code === DEFAULT_COUNTRY ? 1 : a.name.localeCompare(b.name),
+    );
+}
+
+// true en el navegador ya hidratado; false en el servidor y al hidratar.
+const noopSubscribe = () => () => {};
+function useHydrated() {
+  return useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false,
   );
+}
 
 export type PhoneValue = {
   // Numero en formato internacional (+12025550123), o null si no es valido.
@@ -36,6 +51,16 @@ export default function PhoneInput({
   const [country, setCountry] = useState<CountryCode>(DEFAULT_COUNTRY);
   const [text, setText] = useState("");
   const [touched, setTouched] = useState(false);
+  const hydrated = useHydrated();
+  // Antes de hidratar solo va el pais elegido, con su codigo (igual en el
+  // servidor y en el navegador).
+  const countries = useMemo(
+    () =>
+      hydrated
+        ? buildCountries()
+        : [{ code: country, name: country, dial: getCountryCallingCode(country) }],
+    [hydrated, country],
+  );
 
   const parsed = text.trim() ? parsePhoneNumberFromString(text, country) : undefined;
   const valid = Boolean(parsed?.isValid());
@@ -57,7 +82,7 @@ export default function PhoneInput({
           onChange={(e) => update(e.target.value as CountryCode, text)}
           className={`${INPUT_CLASS} w-[42%] max-w-[190px] shrink-0 cursor-pointer bg-white dark:bg-superficie`}
         >
-          {COUNTRIES.map((c) => (
+          {countries.map((c) => (
             <option key={c.code} value={c.code}>
               {c.name} (+{c.dial})
             </option>

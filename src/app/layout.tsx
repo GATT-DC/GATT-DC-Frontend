@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { InlineScript } from "@/components/layout/InlineScript";
 import { fraunces, pinyon, radioGrotesk } from "@/lib/fonts";
 import "./globals.css";
 
@@ -22,7 +23,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${fraunces.variable} ${pinyon.variable} ${radioGrotesk.variable}`}
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+        <InlineScript html={THEME_SCRIPT} />
       </head>
       <body>{children}</body>
     </html>
