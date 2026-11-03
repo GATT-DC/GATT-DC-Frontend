@@ -216,15 +216,18 @@ export function SocialButton({
 export function SocialOptions({ next = HOME_AFTER_LOGIN }: { next?: string }) {
   const [error, setError] = useState("");
 
-  async function continueWithGoogle() {
+  async function continueWith(provider: "google" | "linkedin") {
     setError("");
     const { error } = await authClient.signIn.social({
-      provider: "google",
+      provider,
       callbackURL: next,
       newUserCallbackURL: "/complete-profile",
       errorCallbackURL: "/login",
     });
-    if (error) setError("Signing in with Google isn't available right now. Try again later or use your email.");
+    if (error) {
+      const name = provider === "google" ? "Google" : "LinkedIn";
+      setError(`Signing in with ${name} isn't available right now. Try again later or use your email.`);
+    }
   }
 
   return (
@@ -235,11 +238,12 @@ export function SocialOptions({ next = HOME_AFTER_LOGIN }: { next?: string }) {
         <span className="h-px flex-1 bg-texto/70" />
       </div>
       <div className="mt-6 space-y-3">
-        <SocialButton icon="google" onClick={continueWithGoogle}>
+        <SocialButton icon="google" onClick={() => continueWith("google")}>
           Continue with Google
         </SocialButton>
-        {/* Se conecta en la siguiente fase. */}
-        <SocialButton icon="linkedin">Continue with LinkedIn</SocialButton>
+        <SocialButton icon="linkedin" onClick={() => continueWith("linkedin")}>
+          Continue with LinkedIn
+        </SocialButton>
       </div>
       {error && (
         <div className="mt-4">

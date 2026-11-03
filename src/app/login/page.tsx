@@ -17,15 +17,18 @@ const NOTICES: Record<string, string> = {
   "password-reset": "Your password was changed. Sign in with your new password.",
 };
 
-// Errores al volver de Google (Better Auth redirige aqui con ?error=...).
+// Errores al volver de Google o LinkedIn (Better Auth redirige aqui con
+// ?error=...).
 const SOCIAL_ERRORS: Record<string, string> = {
   account_not_linked:
     "There's already an account with this email that hasn't been confirmed. Sign in with your email and password (or reset it) first.",
-  access_denied: "Signing in with Google was cancelled.",
-  email_not_found: "Your Google account didn't share an email address, so we couldn't sign you in.",
-  email_not_verified: "Your Google email isn't verified yet. Verify it with Google and try again.",
+  access_denied: "Signing in was cancelled.",
+  user_cancelled_login: "Signing in was cancelled.",
+  user_cancelled_authorize: "Signing in was cancelled.",
+  email_not_found: "That account didn't share an email address, so we couldn't sign you in.",
+  email_not_verified: "The email on that account isn't verified yet. Verify it and try again.",
 };
-const SOCIAL_FALLBACK = "We couldn't sign you in with Google. Please try again.";
+const SOCIAL_FALLBACK = "We couldn't sign you in with that account. Please try again.";
 
 export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   const { next, error, notice } = await searchParams;
