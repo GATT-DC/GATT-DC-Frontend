@@ -53,10 +53,9 @@ export default function DiscoverCard({
   );
 
   return (
-    <article
-      // Mientras esta abierta, la vista abierta toma su lugar.
-      style={{ visibility: isOpen ? "hidden" : undefined }}
-    >
+    // Queda visible mientras esta abierta: la vista abierta aparece encima con un
+    // fundido y, al cerrarse, la tarjeta vuelve a verse por debajo sin saltos.
+    <article>
       <div className="pl-3">
         {onOpen ? (
           <button
