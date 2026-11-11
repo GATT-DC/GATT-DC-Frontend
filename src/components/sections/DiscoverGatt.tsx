@@ -11,6 +11,7 @@ import DiscoverCard from "@/components/sections/DiscoverCard";
 import AboutUsOverlay from "@/components/sections/AboutUsOverlay";
 import type { BackFolderOrigin } from "@/components/layout/BackFolderOverlay";
 import BoardOverlay from "@/components/sections/BoardOverlay";
+import CommunityOverlay, { COMMUNITY_PREVIEW } from "@/components/sections/CommunityOverlay";
 import MissionOverlay from "@/components/sections/MissionOverlay";
 import WhatWeDoOverlay from "@/components/sections/WhatWeDoOverlay";
 import {
@@ -43,10 +44,13 @@ const ABOUT_SHEET_DIMMED = "var(--color-hoja-atenuada)";
 const SHEET_TINT = "rgb(200 204 216 / 0.25)";
 
 // Carpetas de atras: pestaña oscura con la etiqueta en su color de la paleta.
-// El orden es de atras hacia adelante. Todas se abren menos "Our community",
-// que aun no tiene contenido.
+// El orden es de atras hacia adelante.
 const BACK_FOLDERS: BackFolder[] = [
-  { id: "community", lead: "Our", accent: "community", color: "var(--color-rojo)", shade: "var(--color-carpeta-1)", offset: "12px", texture: "community" },
+  {
+    id: "community", lead: "Our", accent: "community", color: "var(--color-rojo)", shade: "var(--color-carpeta-1)", offset: "12px", texture: "community",
+    preview: COMMUNITY_PREVIEW,
+    peek: { src: "/images/landing/community/rooftop-friends.png", width: 1470, height: 1216, className: "left-[76%] w-[13%] min-w-[120px] rotate-[4deg]" },
+  },
   { id: "board", lead: "The", accent: "gatt", trail: "Board", color: "var(--color-naranja)", shade: "var(--color-carpeta-2)", offset: "10%", texture: "board" },
   {
     id: "mission", lead: "Our", accent: "mission", color: "var(--color-verde)", shade: "var(--color-carpeta-3)", offset: "12px", texture: "mission",
@@ -111,7 +115,7 @@ function CardTitle({
 
 export default function DiscoverGatt() {
   const [openFolder, setOpenFolder] = useState<
-    "about" | "what-we-do" | "board" | "mission" | null
+    "about" | "what-we-do" | "board" | "mission" | "community" | null
   >(null);
   const open = openFolder === "about";
   const whatWeDoOpen = openFolder === "what-we-do";
@@ -125,6 +129,8 @@ export default function DiscoverGatt() {
   const boardBodyRef = useRef<HTMLDivElement>(null);
   const missionTabRef = useRef<HTMLButtonElement>(null);
   const missionBodyRef = useRef<HTMLDivElement>(null);
+  const communityTabRef = useRef<HTMLButtonElement>(null);
+  const communityBodyRef = useRef<HTMLDivElement>(null);
   // Tarjetas de celular: la vista abierta se anima desde ellas en vez del stack.
   const [fromCards, setFromCards] = useState(false);
   const cardAboutTabRef = useRef<HTMLButtonElement>(null);
@@ -137,15 +143,19 @@ export default function DiscoverGatt() {
   const cardMissionBodyRef = useRef<HTMLDivElement>(null);
   const cardBoardTabRef = useRef<HTMLButtonElement>(null);
   const cardBoardBodyRef = useRef<HTMLDivElement>(null);
+  const cardCommunityTabRef = useRef<HTMLButtonElement>(null);
+  const cardCommunityBodyRef = useRef<HTMLDivElement>(null);
   const bodyRefs: Record<string, RefObject<HTMLDivElement | null>> = {
     "what-we-do": whatWeDoBodyRef,
     board: boardBodyRef,
     mission: missionBodyRef,
+    community: communityBodyRef,
   };
   const tabRefs = {
     "what-we-do": whatWeDoTabRef,
     board: boardTabRef,
     mission: missionTabRef,
+    community: communityTabRef,
   };
   // Carpeta bajo el mouse o con foco de teclado: se pinta de su color y About
   // us pasa a oscuro. Mouse y foco se llevan por separado para que perder el
@@ -221,6 +231,16 @@ export default function DiscoverGatt() {
     [],
   );
 
+  const communityOrigin = useMemo<BackFolderOrigin>(
+    () => ({
+      body: communityBodyRef,
+      tab: communityTabRef,
+      coveredBy: boardBodyRef,
+      coveredByTab: boardTabRef,
+    }),
+    [],
+  );
+
   const cardAboutOrigin = useMemo<FolderOrigin>(
     () => ({
       body: cardAboutBodyRef,
@@ -243,7 +263,11 @@ export default function DiscoverGatt() {
     () => ({ body: cardBoardBodyRef, tab: cardBoardTabRef, card: true }),
     [],
   );
-  const openFromCard = (id: "about" | "what-we-do" | "mission" | "board") => {
+  const cardCommunityOrigin = useMemo<BackFolderOrigin>(
+    () => ({ body: cardCommunityBodyRef, tab: cardCommunityTabRef, card: true }),
+    [],
+  );
+  const openFromCard = (id: "about" | "what-we-do" | "mission" | "board" | "community") => {
     setFromCards(true);
     setOpenFolder(id);
   };
@@ -279,7 +303,8 @@ export default function DiscoverGatt() {
             const openable =
               folder.id === "what-we-do" ||
               folder.id === "board" ||
-              folder.id === "mission"
+              folder.id === "mission" ||
+              folder.id === "community"
                 ? folder.id
                 : null;
             const isOpen = openable !== null && openFolder === openable;
@@ -356,7 +381,11 @@ export default function DiscoverGatt() {
                       style={{ visibility: "visible" }}
                     >
                       <Image
-                        src={`/images/landing/discover-gatt/${folder.peek.src}`}
+                        src={
+                          folder.peek.src.startsWith("/")
+                            ? folder.peek.src
+                            : `/images/landing/discover-gatt/${folder.peek.src}`
+                        }
                         alt=""
                         width={folder.peek.width}
                         height={folder.peek.height}
@@ -604,12 +633,16 @@ export default function DiscoverGatt() {
             color="var(--color-rojo)"
             label={<TabLabel lead="Our" accent="community" color="#ffffff" />}
             title={<CardTitle lead="Our" accent="community" color="var(--color-rojo)" />}
-            tagline="Coming soon"
+            tagline="Four decades of connection"
             photos={[
+              { src: "/images/landing/community/group-together.jpg", alt: "" },
               { src: "eventonetworking.png", alt: "" },
-              { src: "Santiago.png", alt: "" },
-              { src: "Thomas.png", alt: "" },
+              { src: "whoweare.png", alt: "" },
             ]}
+            onOpen={() => openFromCard("community")}
+            isOpen={fromCards && openFolder === "community"}
+            tabRef={cardCommunityTabRef}
+            bodyRef={cardCommunityBodyRef}
           />
         </div>
       </div>
@@ -637,6 +670,12 @@ export default function DiscoverGatt() {
         onClose={close}
         origin={fromCards ? cardMissionOrigin : missionOrigin}
         highlighted={fromCards || hovered === "mission"}
+      />
+      <CommunityOverlay
+        open={openFolder === "community"}
+        onClose={close}
+        origin={fromCards ? cardCommunityOrigin : communityOrigin}
+        highlighted={fromCards || hovered === "community"}
       />
     </section>
   );

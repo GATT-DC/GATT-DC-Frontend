@@ -89,7 +89,7 @@ export default function DiscoverCard({
             className={`absolute top-5 aspect-[4/5] w-[32%] overflow-hidden rounded-lg bg-black/20 shadow-md ${FAN[i + (leadPhoto ? 1 : 0)]}`}
           >
             <Image
-              src={`/images/landing/discover-gatt/${photo.src}`}
+              src={photo.src.startsWith("/") ? photo.src : `/images/landing/discover-gatt/${photo.src}`}
               alt={photo.alt}
               fill
               sizes="120px"
