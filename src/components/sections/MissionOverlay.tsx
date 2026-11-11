@@ -4,15 +4,17 @@ import Image from "next/image";
 import BackFolderOverlay, {
   type BackFolderOrigin,
 } from "@/components/layout/BackFolderOverlay";
+import BinderClip from "@/components/layout/BinderClip";
 import FolderTab from "@/components/layout/FolderTab";
-import Paperclip from "@/components/layout/Paperclip";
 
-// Interior verde oscuro de la carpeta abierta (segun el mockup); el borde, la
+// Interior gris oscuro de la carpeta abierta (segun el mockup); el borde, la
 // pestaña y la hoja del frente usan el verde de la paleta.
-const INTERIOR_COLOR = "#009a47";
-// Hoja punteada (dot grid) de la tarjeta del texto.
-const DOT_PAPER =
-  "radial-gradient(circle, rgb(0 0 0 / 0.22) 0.8px, transparent 1.2px) 0 0 / 14px 14px, #f6f3ee";
+const INTERIOR_COLOR = "#2d2d2d";
+// Verde oscuro de la pinza que sujeta la ilustracion.
+const CLIP_GREEN = "#1d7a45";
+
+const PARAGRAPH =
+  "mx-auto max-w-[520px] font-serif text-[16px] font-light leading-[1.35] text-white lg:max-w-[560px] lg:text-[18px]";
 
 function MissionLabel({ className = "" }: { className?: string }) {
   return (
@@ -60,21 +62,14 @@ export default function MissionOverlay({
           </span>
         </FolderTab>
       }
-      sideTabs={
-        <span
-          data-folder-enter="rise"
-          data-folder-delay={250}
-          className="pointer-events-none absolute -left-4 top-[16%] z-20"
-        >
-          <Paperclip className="h-20 w-7 -rotate-[8deg]" />
-        </span>
-      }
+      topEdge
+      scroll
     >
-      <div className="relative px-6 py-10 sm:px-10 lg:px-[5%] lg:py-[clamp(1.5rem,5vh,3rem)]">
+      <div className="relative px-6 pb-16 pt-10 sm:px-10 lg:px-[5%] lg:pb-20 lg:pt-14">
         <h2
           id="mission-title"
           data-folder-enter="rise"
-          className="font-heading text-[34px] font-normal leading-none text-white lg:text-[40px]"
+          className="font-heading text-center text-[40px] font-normal leading-none text-white lg:text-[length:clamp(48px,4.5vw,64px)]"
         >
           Our{" "}
           <span className="font-script inline-block px-1 text-[1.3em] leading-normal">
@@ -82,43 +77,38 @@ export default function MissionOverlay({
           </span>
         </h2>
 
-        <div className="mt-4 flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-[3%]">
-          <div
-            data-folder-enter="sheet"
-            data-folder-delay={80}
-            className="rounded-lg px-7 py-12 shadow-[0_4px_14px_rgba(0,0,0,0.2)] sm:px-12 lg:w-[62%] lg:px-[8%] lg:py-[clamp(3rem,13vh,7rem)]"
-            style={{ background: DOT_PAPER }}
-          >
-            <div className="space-y-6 font-serif text-[16px] leading-[1.3] text-[#1f1f1f] lg:text-[17px]">
-              <p>
-                To bring together LGBTQ+ professionals and allies in
-                international trade, fostering a community built on meaningful
-                connections, professional development, and the exchange of
-                knowledge.
-              </p>
-              <p>
-                Through education, networking, and collaboration, GATT DC
-                creates opportunities for members to grow, engage, and
-                contribute to a more connected and inclusive international
-                trade community.
-              </p>
-            </div>
-          </div>
+        <p data-folder-enter="rise" data-folder-delay={80} className={`mt-6 ${PARAGRAPH}`}>
+          To bring together LGBTQ+ professionals and allies in international
+          trade, fostering a community built on meaningful connections,
+          professional development, and the exchange of knowledge.
+        </p>
 
-          <div
-            data-folder-enter="slide"
-            data-folder-delay={180}
-            className="relative mx-auto aspect-[613/756] w-[70%] max-w-[340px] overflow-hidden rounded-lg shadow-[0_4px_14px_rgba(0,0,0,0.2)] lg:mx-0 lg:mt-[clamp(2rem,7vh,4.5rem)] lg:w-[34%] lg:max-w-none"
-          >
-            <Image
-              src="/images/landing/discover-gatt/ourmission.jpeg"
-              alt="Group of GATT members posing together in a bright studio"
-              fill
-              sizes="(min-width: 1024px) 28vw, 70vw"
-              className="object-cover"
-            />
-          </div>
+        {/* Ilustracion con su marco blanco, sujeta por una pinza en el borde
+            izquierdo. */}
+        <div
+          data-folder-enter="slide"
+          data-folder-delay={180}
+          className="relative mx-auto mt-10 w-[86%] max-w-[620px] sm:w-full lg:mt-12"
+        >
+          <Image
+            src="/images/landing/discover-gatt/our-mission.jpg"
+            alt="Illustration of LGBTQ+ professionals and allies talking over drinks at a lounge bar"
+            width={1600}
+            height={1065}
+            sizes="(min-width: 1024px) 620px, 90vw"
+            className="h-auto w-full shadow-[0_6px_16px_rgba(0,0,0,0.35)]"
+          />
+          <BinderClip
+            color={CLIP_GREEN}
+            className="absolute -left-[28px] top-1/2 h-[46px] w-[34px] -translate-y-1/2 -rotate-90 sm:-left-[46px] sm:h-[76px] sm:w-[57px]"
+          />
         </div>
+
+        <p data-folder-enter="rise" data-folder-delay={280} className={`mt-10 ${PARAGRAPH} lg:mt-12`}>
+          Through education, networking, and collaboration, GATT DC creates
+          opportunities for members to grow, engage, and contribute to a more
+          connected and inclusive international trade community.
+        </p>
       </div>
     </BackFolderOverlay>
   );
