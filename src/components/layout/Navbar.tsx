@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import SideMenu from "@/components/layout/SideMenu";
 import ThemeToggle from "@/components/layout/ThemeToggle";
 import { authClient } from "@/lib/auth-client";
 
@@ -29,6 +30,8 @@ export default function Navbar({ onMedia }: { onMedia?: boolean }) {
   const [overMedia, setOverMedia] = useState(onMedia ?? true);
   const iconColor = (onMedia ?? overMedia) ? "text-white" : "text-texto";
   const { data: session } = authClient.useSession();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const closeMenu = useCallback(() => setMenuOpen(false), []);
 
   // En la landing el color se deriva de si el Hero (video oscuro) sigue en
   // viewport. En overlays se pasa onMedia a mano y no se observa nada.
@@ -69,7 +72,7 @@ export default function Navbar({ onMedia }: { onMedia?: boolean }) {
       <div className="pointer-events-auto flex items-center gap-0.5 sm:gap-4">
         {/* Con sesion iniciada se cambia el par de botones por "My Account". */}
         {session ? (
-          <Link href="/account" className={PRIMARY_BUTTON}>
+          <Link href="/profile" className={PRIMARY_BUTTON}>
             <PersonIcon />
             My Account
           </Link>
@@ -91,7 +94,10 @@ export default function Navbar({ onMedia }: { onMedia?: boolean }) {
 
         <button
           type="button"
+          onClick={() => setMenuOpen(true)}
           aria-label="Abrir menú"
+          aria-haspopup="dialog"
+          aria-expanded={menuOpen}
           className={`flex h-10 w-10 items-center justify-center ${iconColor}`}
         >
           <svg
@@ -110,6 +116,9 @@ export default function Navbar({ onMedia }: { onMedia?: boolean }) {
 
         <ThemeToggle className={iconColor} />
       </div>
+
+      {/* Fijo a la pantalla: no ocupa lugar en la barra. */}
+      <SideMenu open={menuOpen} onClose={closeMenu} signedIn={Boolean(session)} />
     </header>
   );
 }
