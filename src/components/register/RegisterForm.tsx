@@ -226,9 +226,10 @@ export default function RegisterForm({
         />
       )}
 
-      {/* Aun no existe la politica de privacidad. */}
-      <p className="mt-6 text-center font-ui text-[14px] text-primario underline">
-        Privacy Policy
+      <p className="mt-6 text-center font-ui text-[14px]">
+        <Link href="/privacy-policy" className="text-primario underline">
+          Privacy Policy
+        </Link>
       </p>
     </AuthCard>
   );
