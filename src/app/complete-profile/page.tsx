@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export default async function CompleteProfilePage() {
   const user = await getSessionUser();
   if (!user) redirect("/login?next=/complete-profile");
-  if (await getMyProfile()) redirect("/account");
+  if (await getMyProfile()) redirect("/profile");
 
   return (
     <AuthPage>

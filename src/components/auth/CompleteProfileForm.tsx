@@ -19,7 +19,7 @@ export default function CompleteProfileForm({ name }: { name: string }) {
       submitLabel="Save profile"
       onSubmit={async (profile) => {
         await createProfile(profile);
-        router.replace("/account");
+        router.replace("/profile");
         router.refresh();
       }}
     />

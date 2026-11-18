@@ -12,7 +12,7 @@ export default function CheckEmail({ email }: { email: string }) {
 
   async function resend() {
     setStatus("sending");
-    const { error } = await authClient.sendVerificationEmail({ email, callbackURL: "/account" });
+    const { error } = await authClient.sendVerificationEmail({ email, callbackURL: "/profile" });
     setStatus(error ? "error" : "sent");
   }
 

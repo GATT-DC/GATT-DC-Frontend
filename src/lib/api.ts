@@ -20,10 +20,29 @@ export type ProfileInput = {
 export type Profile = Omit<ProfileInput, "termsAccepted" | "phoneNumber"> & {
   id: string;
   phoneNumber: string | null;
+  // Ciudad y estado, p. ej. "Washington, DC".
+  location: string | null;
+  biography: string | null;
+  // Ruta relativa de la foto en S3 (no la URL completa).
+  photoUrl: string | null;
+  isBoardMember: boolean;
+  membershipType?: { id: string; name: string };
   userId: string;
   termsAcceptedAt: string;
   createdAt: string;
   updatedAt: string;
+};
+
+// Lo que el miembro puede editar desde "My profile". null borra el campo.
+export type ProfileUpdate = {
+  firstName: string;
+  lastName: string;
+  linkedinUrl: string;
+  position: string;
+  organization: string;
+  phoneNumber: string | null;
+  location: string | null;
+  biography: string | null;
 };
 
 export class ApiError extends Error {
@@ -61,6 +80,10 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 
 export function register(data: { email: string; password: string; profile: ProfileInput }) {
   return request<void>("/registrations", { method: "POST", body: JSON.stringify(data) });
+}
+
+export function updateMyProfile(changes: ProfileUpdate) {
+  return request<Profile>("/profiles/me", { method: "PUT", body: JSON.stringify(changes) });
 }
 
 export function createProfile(profile: ProfileInput) {

@@ -19,7 +19,9 @@ const SMALL_PRIMARY =
 export default function PhoneSection({
   verifiedPhone,
   pendingPhone,
+  label = "Phone",
 }: {
+  label?: string;
   // Numero ya verificado (con el que puede entrar por SMS).
   verifiedPhone: string | null;
   // Numero que dio al registrarse y todavia no verifico.
@@ -79,7 +81,7 @@ export default function PhoneSection({
 
   return (
     <div className="border-b border-texto/10 pb-3">
-      <p className="font-ui text-[13px] text-texto/55">Phone</p>
+      <p className="font-ui text-[13px] text-texto/55">{label}</p>
 
       {mode === "view" && (
         <div className="mt-1 flex flex-wrap items-center justify-between gap-3">

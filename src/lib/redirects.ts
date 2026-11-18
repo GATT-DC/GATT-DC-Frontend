@@ -1,5 +1,5 @@
 // Pagina a la que se llega despues de iniciar sesion.
-export const HOME_AFTER_LOGIN = "/account";
+export const HOME_AFTER_LOGIN = "/profile";
 
 // Solo se aceptan rutas internas en ?next= (evita redirigir a otro sitio con
 // un enlace armado, como ?next=//sitio-malicioso.com).

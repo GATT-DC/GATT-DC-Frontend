@@ -43,13 +43,17 @@ export default function PhoneInput({
   id,
   onChange,
   autoFocus = false,
+  defaultValue,
 }: {
   id: string;
   onChange: (value: PhoneValue) => void;
   autoFocus?: boolean;
+  // Numero con el que arranca, en formato internacional (+12025550123).
+  defaultValue?: string | null;
 }) {
-  const [country, setCountry] = useState<CountryCode>(DEFAULT_COUNTRY);
-  const [text, setText] = useState("");
+  const initial = defaultValue ? parsePhoneNumberFromString(defaultValue) : undefined;
+  const [country, setCountry] = useState<CountryCode>(initial?.country ?? DEFAULT_COUNTRY);
+  const [text, setText] = useState(initial ? initial.formatNational() : "");
   const [touched, setTouched] = useState(false);
   const hydrated = useHydrated();
   // Antes de hidratar solo va el pais elegido, con su codigo (igual en el
