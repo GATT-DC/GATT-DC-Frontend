@@ -89,3 +89,57 @@ export function updateMyProfile(changes: ProfileUpdate) {
 export function createProfile(profile: ProfileInput) {
   return request<Profile>("/profiles", { method: "POST", body: JSON.stringify(profile) });
 }
+
+// ---- Blogs ----
+
+export type BlogStatus = "draft" | "published";
+
+// Seccion de texto: subtitulo y parrafos (separados por lineas en blanco).
+export type BlogSection = { title: string; body: string };
+
+// Tarjeta de "Our Panelists".
+export type Panelist = {
+  name: string;
+  // Ruta relativa de la foto en S3, o null para el marcador de posicion.
+  imageUrl: string | null;
+  linkedinUrl: string | null;
+};
+
+// Lo que envia el editor. Los textos vacios van como null.
+export type BlogPostInput = {
+  title: string;
+  // Admite *palabras* en cursiva.
+  subtitle: string | null;
+  eyebrow: string | null;
+  metaLabel: string | null;
+  authorName: string | null;
+  summary: string | null;
+  coverImageUrl: string | null;
+  heroImageUrls: string[];
+  status: BlogStatus;
+  sections: BlogSection[];
+  // Seccion "Our Panelists"; vacia = no se muestra.
+  panelists: Panelist[];
+  // Cuantas secciones de texto van antes de "Our Panelists".
+  panelistsPosition: number;
+};
+
+export type BlogPost = BlogPostInput & {
+  id: string;
+  slug: string;
+  publishedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export function createBlogPost(post: BlogPostInput) {
+  return request<BlogPost>("/blog-posts", { method: "POST", body: JSON.stringify(post) });
+}
+
+export function updateBlogPost(id: string, post: BlogPostInput) {
+  return request<BlogPost>(`/blog-posts/${id}`, { method: "PUT", body: JSON.stringify(post) });
+}
+
+export function deleteBlogPost(id: string) {
+  return request<void>(`/blog-posts/${id}`, { method: "DELETE" });
+}

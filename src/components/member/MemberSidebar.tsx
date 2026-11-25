@@ -7,12 +7,12 @@ type Section = {
   href?: string;
 };
 
-// Carpetas del area de miembros. Solo "My profile" existe por ahora; las
+// Carpetas del area de miembros. "My profile" y "Our blog" ya existen; las
 // demas se muestran como proximas.
 const SECTIONS: Section[] = [
   { script: "My", word: "profile", color: "var(--color-naranja)", href: "/profile" },
   { script: "Coming", word: "events", color: "var(--color-morado)" },
-  { script: "Our", word: "blog", color: "var(--color-amarillo)" },
+  { script: "Our", word: "blog", color: "var(--color-amarillo)", href: "/blog" },
   { script: "Community", word: "hub", color: "var(--color-primario)" },
 ];
 

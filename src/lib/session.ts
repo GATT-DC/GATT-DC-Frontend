@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import type { Profile } from "@/lib/api";
+import type { BlogPost, Profile } from "@/lib/api";
 import { BACKEND_URL } from "@/lib/backend";
 
 // Lectura de la sesion desde componentes de servidor: se le pregunta al
@@ -14,6 +14,8 @@ export type SessionUser = {
   // Telefono verificado con el que puede entrar por SMS.
   phoneNumber?: string | null;
   phoneNumberVerified?: boolean | null;
+  // Solo los admins crean y editan blogs.
+  isAdmin?: boolean;
 };
 
 async function backendGet(path: string): Promise<Response> {
@@ -38,4 +40,19 @@ export async function getMyProfile(): Promise<Profile | null> {
   if (response.status === 404) return null;
   if (!response.ok) throw new Error(`Could not load the profile (${response.status})`);
   return (await response.json()) as Profile;
+}
+
+// Blogs del area de miembros. Los admins reciben tambien los borradores.
+export async function getBlogPosts(): Promise<BlogPost[]> {
+  const response = await backendGet("/api/v1/blog-posts");
+  if (!response.ok) throw new Error(`Could not load the blog posts (${response.status})`);
+  return (await response.json()) as BlogPost[];
+}
+
+// Un blog por su slug, o null si no existe (o es un borrador y no es admin).
+export async function getBlogPost(slug: string): Promise<BlogPost | null> {
+  const response = await backendGet(`/api/v1/blog-posts/${encodeURIComponent(slug)}`);
+  if (response.status === 404) return null;
+  if (!response.ok) throw new Error(`Could not load the blog post (${response.status})`);
+  return (await response.json()) as BlogPost;
 }
