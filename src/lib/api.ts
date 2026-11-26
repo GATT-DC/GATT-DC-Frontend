@@ -143,3 +143,106 @@ export function updateBlogPost(id: string, post: BlogPostInput) {
 export function deleteBlogPost(id: string) {
   return request<void>(`/blog-posts/${id}`, { method: "DELETE" });
 }
+
+// ---- Panel de admin: usuarios ----
+
+export type MembershipType = {
+  id: string;
+  name: string;
+  // Monto que corresponde al tipo, "1500.00".
+  annualContribution: string;
+  sortOrder: number;
+  isDefault: boolean;
+  isActive: boolean;
+};
+
+export type ContributionSource = "gofundme" | "manual";
+
+export type Contribution = {
+  id: string;
+  amount: string;
+  currency: string;
+  // "YYYY-MM-DD"
+  paidAt: string;
+  source: ContributionSource;
+  externalReference: string | null;
+  notes: string | null;
+  recordedBy: { id: string; name: string } | null;
+  createdAt: string;
+};
+
+export type ContributionInput = {
+  amount: string;
+  paidAt: string;
+  source: ContributionSource;
+  externalReference: string | null;
+  notes: string | null;
+};
+
+// Fila del listado de usuarios.
+export type AdminUserRow = {
+  id: string;
+  name: string;
+  email: string;
+  image: string | null;
+  emailVerified: boolean;
+  isAdmin: boolean;
+  isSuspended: boolean;
+  createdAt: string;
+  profileId: string | null;
+  organization: string | null;
+  isBoardMember: boolean;
+  membershipType: { id: string; name: string } | null;
+  totalContributed: string;
+};
+
+export type AdminUserPage = { items: AdminUserRow[]; total: number; page: number; pageSize: number };
+
+export type AdminUserDetail = {
+  id: string;
+  name: string;
+  email: string;
+  image: string | null;
+  emailVerified: boolean;
+  isAdmin: boolean;
+  isSuspended: boolean;
+  createdAt: string;
+  // null si todavia no completo su perfil.
+  profile: Profile | null;
+  contributions: Contribution[];
+  totalContributed: string;
+};
+
+export type AdminUserAccess = { isAdmin?: boolean; isBoardMember?: boolean; isSuspended?: boolean };
+
+const adminUser = (id: string) => `/admin/users/${encodeURIComponent(id)}`;
+
+export function updateAdminUserProfile(id: string, changes: ProfileUpdate) {
+  return request<AdminUserDetail>(`${adminUser(id)}/profile`, { method: "PUT", body: JSON.stringify(changes) });
+}
+
+export function setAdminUserMembershipType(id: string, membershipTypeId: string) {
+  return request<AdminUserDetail>(`${adminUser(id)}/membership-type`, {
+    method: "PUT",
+    body: JSON.stringify({ membershipTypeId }),
+  });
+}
+
+export function setAdminUserAccess(id: string, access: AdminUserAccess) {
+  return request<AdminUserDetail>(`${adminUser(id)}/access`, { method: "PUT", body: JSON.stringify(access) });
+}
+
+export function addAdminContribution(id: string, contribution: ContributionInput) {
+  return request<AdminUserDetail>(`${adminUser(id)}/contributions`, { method: "POST", body: JSON.stringify(contribution) });
+}
+
+export function updateAdminContribution(id: string, contributionId: string, contribution: ContributionInput) {
+  return request<AdminUserDetail>(`${adminUser(id)}/contributions/${encodeURIComponent(contributionId)}`, {
+    method: "PUT",
+    body: JSON.stringify(contribution),
+  });
+}
+
+export function deleteAdminContribution(id: string, contributionId: string) {
+  return request<AdminUserDetail>(`${adminUser(id)}/contributions/${encodeURIComponent(contributionId)}`, { method: "DELETE" });
+}

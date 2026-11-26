@@ -16,6 +16,9 @@ const SECTIONS: Section[] = [
   { script: "Community", word: "hub", color: "var(--color-primario)" },
 ];
 
+// Solo para admins: el panel para gestionar usuarios.
+const ADMIN_SECTION: Section = { script: "Manage", word: "members", color: "var(--color-verde)", href: "/admin/users" };
+
 // Carpeta de color con su pestaña. La de la seccion actual asoma una hoja.
 function Folder({ section, active }: { section: Section; active: boolean }) {
   const back = `color-mix(in srgb, ${section.color} 72%, black)`;
@@ -38,11 +41,12 @@ function Folder({ section, active }: { section: Section; active: boolean }) {
   );
 }
 
-export default function MemberSidebar({ current }: { current: string }) {
+export default function MemberSidebar({ current, isAdmin = false }: { current: string; isAdmin?: boolean }) {
+  const sections = isAdmin ? [...SECTIONS, ADMIN_SECTION] : SECTIONS;
   return (
     <nav aria-label="Member sections">
       <ul className="flex gap-4 overflow-x-auto pb-2 [scrollbar-width:none] lg:flex-col lg:gap-7 lg:overflow-visible lg:pb-0">
-        {SECTIONS.map((section) => {
+        {sections.map((section) => {
           const label = `${section.script} ${section.word}`;
           const active = section.href === current;
           return (

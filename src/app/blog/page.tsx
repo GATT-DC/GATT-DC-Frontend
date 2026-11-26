@@ -97,7 +97,7 @@ export default async function BlogListPage({ searchParams }: PageProps<"/blog">)
     `rounded-full px-4 py-1.5 font-ui text-[13px] transition-colors ${active ? "bg-amarillo text-[#141414]" : "text-texto/70 hover:text-texto"}`;
 
   return (
-    <MemberShell name={name} current="/blog">
+    <MemberShell name={name} current="/blog" isAdmin={isAdmin}>
       <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <h1 className="font-heading text-[44px] font-normal leading-none text-texto lg:text-[56px]">
           Our<span className="font-script ml-3 text-[1.15em]">Blogs</span>

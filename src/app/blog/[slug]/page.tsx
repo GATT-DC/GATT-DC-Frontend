@@ -76,7 +76,7 @@ export default async function BlogPostPage({
   );
 
   return (
-    <MemberShell name={name} current="/blog" footer>
+    <MemberShell name={name} current="/blog" isAdmin={isAdmin} footer>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <Link
           href="/blog"

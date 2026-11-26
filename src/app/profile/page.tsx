@@ -33,7 +33,7 @@ export default async function ProfilePage({ searchParams }: PageProps<"/profile"
   const error = typeof params.error === "string" ? (ERRORS[params.error] ?? undefined) : undefined;
 
   return (
-    <MemberShell name={`${profile.firstName} ${profile.lastName}`} current="/profile">
+    <MemberShell name={`${profile.firstName} ${profile.lastName}`} current="/profile" isAdmin={user.isAdmin === true}>
       <h1 className="font-heading mb-6 text-[44px] font-normal leading-none text-naranja lg:text-[56px]">
         <span className="font-script mr-2 text-[1.15em]">My</span>profile
       </h1>

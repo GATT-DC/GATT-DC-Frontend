@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import type { BlogPost, Profile } from "@/lib/api";
+import type { AdminUserDetail, AdminUserPage, BlogPost, MembershipType, Profile } from "@/lib/api";
 import { BACKEND_URL } from "@/lib/backend";
 
 // Lectura de la sesion desde componentes de servidor: se le pregunta al
@@ -55,4 +55,29 @@ export async function getBlogPost(slug: string): Promise<BlogPost | null> {
   if (response.status === 404) return null;
   if (!response.ok) throw new Error(`Could not load the blog post (${response.status})`);
   return (await response.json()) as BlogPost;
+}
+
+// ---- Panel de admin ----
+
+// Listado de usuarios con los filtros de la URL (search, membershipTypeId,
+// role, status, sort, page).
+export async function getAdminUsers(filters: Record<string, string>): Promise<AdminUserPage> {
+  const query = new URLSearchParams(filters).toString();
+  const response = await backendGet(`/api/v1/admin/users${query ? `?${query}` : ""}`);
+  if (!response.ok) throw new Error(`Could not load the users (${response.status})`);
+  return (await response.json()) as AdminUserPage;
+}
+
+// Un usuario con su perfil y aportes, o null si no existe.
+export async function getAdminUser(id: string): Promise<AdminUserDetail | null> {
+  const response = await backendGet(`/api/v1/admin/users/${encodeURIComponent(id)}`);
+  if (response.status === 404 || response.status === 400) return null;
+  if (!response.ok) throw new Error(`Could not load the user (${response.status})`);
+  return (await response.json()) as AdminUserDetail;
+}
+
+export async function getMembershipTypes(): Promise<MembershipType[]> {
+  const response = await backendGet("/api/v1/admin/membership-types");
+  if (!response.ok) throw new Error(`Could not load the membership types (${response.status})`);
+  return (await response.json()) as MembershipType[];
 }

@@ -18,7 +18,7 @@ export default async function EditBlogPostPage({ params }: PageProps<"/blog/[slu
   if (!post) notFound();
 
   return (
-    <MemberShell name={name} current="/blog">
+    <MemberShell name={name} current="/blog" isAdmin={isAdmin}>
       <h1 className="font-heading mb-6 text-[40px] font-normal leading-none text-amarillo lg:text-[48px]">
         <span className="font-script mr-4 text-[1.15em]">Edit</span>blog post
       </h1>

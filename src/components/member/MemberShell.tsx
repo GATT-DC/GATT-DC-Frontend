@@ -10,11 +10,14 @@ export default function MemberShell({
   name,
   current,
   footer = false,
+  isAdmin = false,
   children,
 }: {
   name: string;
   current: string;
   footer?: boolean;
+  // Muestra la carpeta del panel de admin.
+  isAdmin?: boolean;
   children: ReactNode;
 }) {
   return (
@@ -22,7 +25,7 @@ export default function MemberShell({
       <MemberHeader name={name} />
       <main className="mx-auto grid max-w-[1920px] grid-cols-1 gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[120px_minmax(0,1fr)] lg:gap-10 lg:px-8 lg:py-12">
         <div className="lg:pt-24">
-          <MemberSidebar current={current} />
+          <MemberSidebar current={current} isAdmin={isAdmin} />
         </div>
         <div className="min-w-0">{children}</div>
       </main>
