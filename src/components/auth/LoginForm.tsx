@@ -15,6 +15,7 @@ import {
 import PhoneLoginForm from "@/components/auth/PhoneLoginForm";
 import { authClient } from "@/lib/auth-client";
 import { EMAIL_PATTERN } from "@/lib/password";
+import { ACCOUNT_SUSPENDED_MESSAGE } from "@/lib/phone";
 
 // Inicio de sesion con correo y contraseña, o con un codigo por SMS.
 export default function LoginForm({
@@ -93,7 +94,9 @@ function EmailLoginForm({ next, notice }: { next: string; notice?: string }) {
     }
 
     setPending(false);
-    if (error.status === 403) {
+    if (error.code === "ACCOUNT_SUSPENDED") {
+      setError(ACCOUNT_SUSPENDED_MESSAGE);
+    } else if (error.status === 403) {
       // Cuenta sin confirmar: el backend reenvia el correo de confirmacion.
       setInfo(`Confirm your email first. We sent a new link to ${email.trim()}.`);
     } else if (error.status === 401) {

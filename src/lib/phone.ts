@@ -1,5 +1,8 @@
 import { parsePhoneNumberFromString } from "libphonenumber-js";
 
+// Cuenta suspendida por un admin (Better Auth responde con este codigo).
+export const ACCOUNT_SUSPENDED_MESSAGE = "Your account is suspended. Contact GATT DC if you think this is a mistake.";
+
 // Mensaje para los errores de Better Auth al pedir o confirmar un codigo SMS.
 export function phoneErrorMessage(error: { code?: string; status: number }): string {
   if (error.status === 429) return "Too many codes requested. Wait a few minutes and try again.";
@@ -15,6 +18,8 @@ export function phoneErrorMessage(error: { code?: string; status: number }): str
       return "That number is already linked to another account.";
     case "INVALID_PHONE_NUMBER":
       return "Enter a valid phone number.";
+    case "ACCOUNT_SUSPENDED":
+      return ACCOUNT_SUSPENDED_MESSAGE;
     default:
       return "Something went wrong. Please try again.";
   }

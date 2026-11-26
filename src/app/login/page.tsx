@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import AuthPage from "@/components/auth/AuthPage";
 import LoginForm from "@/components/auth/LoginForm";
 import { AuthCard } from "@/components/auth/ui";
+import { ACCOUNT_SUSPENDED_MESSAGE } from "@/lib/phone";
 import { safeNextPath } from "@/lib/redirects";
 
 export const metadata: Metadata = {
@@ -27,6 +28,9 @@ const SOCIAL_ERRORS: Record<string, string> = {
   user_cancelled_authorize: "Signing in was cancelled.",
   email_not_found: "That account didn't share an email address, so we couldn't sign you in.",
   email_not_verified: "The email on that account isn't verified yet. Verify it and try again.",
+  // Cuenta suspendida por un admin.
+  ACCOUNT_SUSPENDED: ACCOUNT_SUSPENDED_MESSAGE,
+  account_suspended: ACCOUNT_SUSPENDED_MESSAGE,
 };
 const SOCIAL_FALLBACK = "We couldn't sign you in with that account. Please try again.";
 
