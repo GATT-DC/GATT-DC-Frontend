@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import Marquee from "@/components/layout/Marquee";
+import { formatMoney } from "@/lib/format";
+import { SPONSOR_TIERS } from "@/lib/site";
 
 // Avance de la recaudacion (0 a 100): el arco se rellena hasta aqui.
 const PROGRESS = 50;
@@ -18,12 +20,6 @@ const TEXT_RADIUS = RADIUS + STROKE / 2 + 16;
 // Circulo recorrido en sentido horario empezando arriba (para el texto curvo).
 const TEXT_PATH = `M ${CENTER} ${CENTER - TEXT_RADIUS} A ${TEXT_RADIUS} ${TEXT_RADIUS} 0 1 1 ${CENTER} ${CENTER + TEXT_RADIUS} A ${TEXT_RADIUS} ${TEXT_RADIUS} 0 1 1 ${CENTER} ${CENTER - TEXT_RADIUS}`;
 
-const TIERS = [
-  { name: "Platinum", amount: "$1,500", color: "var(--color-texto)" },
-  { name: "Gold", amount: "$5,000", color: "var(--color-amarillo)" },
-  { name: "Bronze", amount: "$1,500", color: "#d9925f" },
-  { name: "Silver", amount: "$3,000", color: "#8c8c8c" },
-];
 
 // Logos de los patrocinadores (carrusel infinito). Barnes & Thornburg tiene
 // version de letras blancas (2.png, modo oscuro) y negras (1.png, modo claro).
@@ -157,7 +153,7 @@ export default function MemberFundraiser() {
             </span>
           </h2>
           <a
-            href="#donate"
+            href="/donate"
             className="mt-4 rounded-full bg-gradient-to-b from-[#bbff00] to-[#4fd400] px-6 py-2 font-ui text-[14px] font-medium text-[#102000] transition-[filter] hover:brightness-110 sm:text-[15px]"
           >
             Donate Now
@@ -177,7 +173,7 @@ export default function MemberFundraiser() {
         </p>
 
         <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {TIERS.map((tier) => (
+          {SPONSOR_TIERS.map((tier) => (
             <li
               key={tier.name}
               className="flex items-center gap-4 rounded-md bg-superficie-2 px-5 py-4"
@@ -190,7 +186,7 @@ export default function MemberFundraiser() {
               </span>
               <span className="leading-tight">
                 <span className="font-heading block text-[17px] text-texto">
-                  {tier.amount}
+                  {formatMoney(tier.amount).replace(".00", "")}
                 </span>
                 <span className="block whitespace-nowrap font-serif text-[14px] font-light text-texto">
                   Annual Contribution

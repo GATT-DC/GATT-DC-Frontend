@@ -144,7 +144,7 @@ export default function SideMenu({
               </div>
             </li>
             <li>{link("/#monthly-networking", "Events")}</li>
-            <li>{link("/#member-fundraiser", "Donations")}</li>
+            <li>{link("/donate", "Donations")}</li>
             <li>{signedIn ? link("/profile", "My profile") : link("/register", "Become a Member")}</li>
           </ul>
         </nav>

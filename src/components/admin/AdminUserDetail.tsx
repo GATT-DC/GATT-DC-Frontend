@@ -33,7 +33,7 @@ const SECONDARY =
   "inline-flex items-center rounded-full border border-texto/30 px-4 py-1.5 font-ui text-[13px] text-texto transition-colors hover:bg-texto/[0.06] disabled:opacity-50";
 const LINK_BUTTON = "font-ui text-[13px] text-texto/70 underline-offset-2 hover:text-texto hover:underline disabled:opacity-40";
 
-const SOURCES: Record<string, string> = { gofundme: "GoFundMe", manual: "Manual (cash, check…)" };
+const SOURCES: Record<string, string> = { gofundme: "GoFundMe", paypal: "PayPal", stripe: "Stripe (card)", manual: "Manual (cash, check…)" };
 
 function message(err: unknown) {
   return err instanceof ApiError ? err.message : "Something went wrong. Please try again.";

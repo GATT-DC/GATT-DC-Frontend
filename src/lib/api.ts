@@ -156,7 +156,7 @@ export type MembershipType = {
   isActive: boolean;
 };
 
-export type ContributionSource = "gofundme" | "manual";
+export type ContributionSource = "gofundme" | "paypal" | "stripe" | "manual";
 
 export type Contribution = {
   id: string;

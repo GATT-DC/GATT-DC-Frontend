@@ -10,7 +10,7 @@ import { authClient } from "@/lib/auth-client";
 
 // Secciones del area de miembros que aun no existen: se muestran para dar la
 // idea del menu completo, pero no navegan.
-const UPCOMING = ["Networking", "Job Opportunities", "Donations"];
+const UPCOMING = ["Networking", "Job Opportunities"];
 
 function PersonIcon() {
   return (
@@ -145,6 +145,9 @@ export default function MemberHeader({
               {item}
             </span>
           ))}
+          <Link href="/donate" className="hidden font-ui text-[14px] text-white hover:underline md:block">
+            Donations
+          </Link>
           <ThemeToggle className="text-white" />
           {name ? (
             <UserMenu name={name} />
