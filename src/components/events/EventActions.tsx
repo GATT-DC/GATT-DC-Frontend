@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ApiError, cancelEventRegistration, registerForEvent, setEventFavorite, type GattEvent } from "@/lib/api";
 import { eventPhase } from "@/lib/event-time";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 
 function ArrowRight() {
   return (
@@ -30,6 +31,7 @@ const MUTED = "inline-flex items-center gap-2 rounded-full border border-texto/3
 // "Edit" para los admins).
 export default function EventActions({ event, signedIn, isAdmin }: { event: GattEvent; signedIn: boolean; isAdmin: boolean }) {
   const router = useRouter();
+  const { confirm, dialog } = useConfirm();
   const [favorite, setFavorite] = useState(event.isFavorite);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -76,8 +78,15 @@ export default function EventActions({ event, signedIn, isAdmin }: { event: Gatt
           <button
             type="button"
             disabled={busy}
-            onClick={() => {
-              if (window.confirm("Cancel your registration for this event?")) void run(() => cancelEventRegistration(event.id));
+            onClick={async () => {
+              const ok = await confirm({
+                title: "Cancel your registration?",
+                message: "Your spot will be freed. You can register again later if there are spots left.",
+                confirmLabel: "Cancel registration",
+                cancelLabel: "Keep it",
+                tone: "danger",
+              });
+              if (ok) void run(() => cancelEventRegistration(event.id));
             }}
             className="font-ui text-[13px] text-texto/70 underline-offset-2 hover:text-texto hover:underline disabled:opacity-50"
           >
@@ -108,6 +117,7 @@ export default function EventActions({ event, signedIn, isAdmin }: { event: Gatt
 
   return (
     <div>
+      {dialog}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Link
           href={signedIn ? "/events" : "/#monthly-networking"}

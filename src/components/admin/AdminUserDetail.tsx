@@ -5,6 +5,7 @@ import type { FormEvent, ReactNode } from "react";
 import Avatar from "@/components/admin/Avatar";
 import UserBadges from "@/components/admin/UserBadges";
 import { FormError, FormNotice } from "@/components/auth/ui";
+import { useConfirm, type ConfirmOptions } from "@/components/ui/ConfirmDialog";
 import {
   ApiError,
   addAdminContribution,
@@ -141,6 +142,7 @@ function ContributionForm({
 function Contributions({ user, onChange }: { user: Detail; onChange: (next: Detail, notice?: string) => void }) {
   // "new", el id del aporte que se edita, o null.
   const [editing, setEditing] = useState<string | null>(null);
+  const { confirm, dialog } = useConfirm();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -170,6 +172,7 @@ function Contributions({ user, onChange }: { user: Detail; onChange: (next: Deta
 
   return (
     <section className={CARD} aria-labelledby="contributions-title">
+      {dialog}
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 id="contributions-title" className={CARD_TITLE}>
@@ -234,10 +237,14 @@ function Contributions({ user, onChange }: { user: Detail; onChange: (next: Deta
                   <button
                     type="button"
                     disabled={editing !== null || saving}
-                    onClick={() => {
-                      if (window.confirm(`Delete the ${formatMoney(c.amount)} contribution from ${formatDate(c.paidAt)}?`)) {
-                        void run(() => deleteAdminContribution(user.id, c.id));
-                      }
+                    onClick={async () => {
+                      const ok = await confirm({
+                        title: "Delete this contribution?",
+                        message: `The ${formatMoney(c.amount)} contribution from ${formatDate(c.paidAt)} will be removed and the total recalculated.`,
+                        confirmLabel: "Delete",
+                        tone: "danger",
+                      });
+                      if (ok) void run(() => deleteAdminContribution(user.id, c.id));
                     }}
                     className={`${LINK_BUTTON} text-rojo hover:text-rojo`}
                   >
@@ -321,8 +328,10 @@ function Access({ user, isSelf, onChange }: { user: Detail; isSelf: boolean; onC
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function toggle(access: AdminUserAccess, confirmText?: string) {
-    if (confirmText && !window.confirm(confirmText)) return;
+  const { confirm, dialog } = useConfirm();
+
+  async function toggle(access: AdminUserAccess, ask?: ConfirmOptions) {
+    if (ask && !(await confirm(ask))) return;
     setSaving(true);
     setError(null);
     try {
@@ -343,7 +352,18 @@ function Access({ user, isSelf, onChange }: { user: Detail; isSelf: boolean; onC
       onToggle: () =>
         toggle(
           { isAdmin: !user.isAdmin },
-          user.isAdmin ? `Remove admin access from ${user.name}?` : `Make ${user.name} an admin? They'll be able to manage every member.`,
+          user.isAdmin
+            ? {
+                title: `Remove admin access from ${user.name}?`,
+                message: "They'll no longer be able to manage members or publish content.",
+                confirmLabel: "Remove admin",
+                tone: "danger",
+              }
+            : {
+                title: `Make ${user.name} an admin?`,
+                message: "They'll be able to manage every member, publish blogs and events.",
+                confirmLabel: "Make admin",
+              },
         ),
     },
     {
@@ -361,13 +381,25 @@ function Access({ user, isSelf, onChange }: { user: Detail; isSelf: boolean; onC
       onToggle: () =>
         toggle(
           { isSuspended: !user.isSuspended },
-          user.isSuspended ? `Reactivate ${user.name}'s account?` : `Suspend ${user.name}? They'll be signed out and won't be able to sign in.`,
+          user.isSuspended
+            ? {
+                title: `Reactivate ${user.name}'s account?`,
+                message: "They'll be able to sign in again.",
+                confirmLabel: "Reactivate",
+              }
+            : {
+                title: `Suspend ${user.name}?`,
+                message: "They'll be signed out right away and won't be able to sign in by any method until the account is reactivated.",
+                confirmLabel: "Suspend",
+                tone: "danger",
+              },
         ),
     },
   ];
 
   return (
     <section className={CARD} aria-labelledby="access-title">
+      {dialog}
       <h2 id="access-title" className={CARD_TITLE}>
         Access
       </h2>

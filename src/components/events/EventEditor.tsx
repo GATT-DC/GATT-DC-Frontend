@@ -6,6 +6,7 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 import { plainText } from "@/components/blog/ScriptText";
 import { FormError } from "@/components/auth/ui";
+import { useConfirm, type ConfirmOptions } from "@/components/ui/ConfirmDialog";
 import { EditableText, ImageIcon, ROUND_BUTTON, cleanPath } from "@/components/editor/InlineEdit";
 import Countdown from "@/components/events/Countdown";
 import EventTour from "@/components/events/EventTour";
@@ -129,6 +130,7 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 // evento: el titulo y la foto se editan sobre la cabecera.
 export default function EventEditor({ event }: { event?: GattEvent }) {
   const router = useRouter();
+  const { confirm, dialog } = useConfirm();
   const [form, setForm] = useState<Form>(() => toForm(event));
   const [imageOpen, setImageOpen] = useState(false);
   const [saving, setSaving] = useState<string | null>(null);
@@ -138,13 +140,13 @@ export default function EventEditor({ event }: { event?: GattEvent }) {
   const startsAt = form.date && form.startTime ? dcToIso(form.date, form.startTime) : null;
   const place = form.location.trim() || form.venueName.trim();
 
-  async function save(next: EventStatus, confirmText?: string) {
+  async function save(next: EventStatus, ask?: ConfirmOptions) {
     const issue = problem(form);
     if (issue) {
       setError(issue);
       return;
     }
-    if (confirmText && !window.confirm(confirmText)) return;
+    if (ask && !(await confirm(ask))) return;
     setError(null);
     setSaving(next);
     try {
@@ -159,7 +161,14 @@ export default function EventEditor({ event }: { event?: GattEvent }) {
   }
 
   async function remove() {
-    if (!event || !window.confirm(`Delete "${plainText(event.name)}"? Its registrations are deleted too. This can't be undone.`)) return;
+    if (!event) return;
+    const ok = await confirm({
+      title: `Delete "${plainText(event.name)}"?`,
+      message: "The event and its registrations are deleted. This can't be undone. To keep them, cancel the event instead.",
+      confirmLabel: "Delete event",
+      tone: "danger",
+    });
+    if (!ok) return;
     setSaving("delete");
     try {
       await deleteEvent(event.id);
@@ -173,6 +182,7 @@ export default function EventEditor({ event }: { event?: GattEvent }) {
 
   return (
     <div>
+      {dialog}
       <div className="mb-6 flex items-center justify-between gap-4 rounded-[14px] bg-texto/[0.06] px-4 py-3">
         <p className="font-ui text-[14px] text-texto/75">
           This is how the event page will look. Click the title or the text to change them, and the{" "}
@@ -397,7 +407,13 @@ export default function EventEditor({ event }: { event?: GattEvent }) {
                   type="button"
                   disabled={saving !== null}
                   onClick={() =>
-                    save("cancelled", "Mark this event as cancelled? It stays visible with a notice and no one else can register.")
+                    save("cancelled", {
+                      title: "Cancel this event?",
+                      message: "It stays visible with a “Cancelled” notice and no one else can register. You can reopen it later.",
+                      confirmLabel: "Cancel event",
+                      cancelLabel: "Keep it",
+                      tone: "danger",
+                    })
                   }
                   className={SMALL}
                 >

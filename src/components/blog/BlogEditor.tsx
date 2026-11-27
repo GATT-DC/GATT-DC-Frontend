@@ -8,6 +8,7 @@ import { EditableText, ImageIcon, ImageSlot, ROUND_BUTTON, SMALL_ROUND, cleanPat
 import { BLOG, BlogSheet, HeroCollage, LinkedInBoxIcon, StampCard } from "@/components/blog/BlogParts";
 import { plainText } from "@/components/blog/ScriptText";
 import { FormError } from "@/components/auth/ui";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 import {
   ApiError,
   createBlogPost,
@@ -225,6 +226,7 @@ function PanelistEditor({
 
 export default function BlogEditor({ post }: { post?: BlogPost }) {
   const router = useRouter();
+  const { confirm, dialog } = useConfirm();
   const [form, setForm] = useState<PostForm>(() => toForm(post));
   const [saving, setSaving] = useState<BlogStatus | "delete" | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -272,7 +274,14 @@ export default function BlogEditor({ post }: { post?: BlogPost }) {
   }
 
   async function remove() {
-    if (!post || !window.confirm(`Delete "${plainText(post.title)}"? This can't be undone.`)) return;
+    if (!post) return;
+    const ok = await confirm({
+      title: `Delete "${plainText(post.title)}"?`,
+      message: "The post is removed for everyone. This can't be undone.",
+      confirmLabel: "Delete post",
+      tone: "danger",
+    });
+    if (!ok) return;
     setError(null);
     setSaving("delete");
     try {
@@ -289,6 +298,7 @@ export default function BlogEditor({ post }: { post?: BlogPost }) {
 
   return (
     <div>
+      {dialog}
       <div className="mb-6 flex items-center justify-between gap-4 rounded-[14px] bg-texto/[0.06] px-4 py-3">
         <p className="font-ui text-[14px] text-texto/75">
           This is how the post will look. Click any text to change it, and the <ImageIcon className="inline-block h-4 w-4 align-[-3px]" /> button
