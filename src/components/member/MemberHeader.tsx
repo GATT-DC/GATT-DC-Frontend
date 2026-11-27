@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import ThemeToggle from "@/components/layout/ThemeToggle";
 import { authClient } from "@/lib/auth-client";
 
@@ -89,20 +90,35 @@ function UserMenu({ name }: { name: string }) {
   );
 }
 
-// Encabezado del area de miembros: el skyline de Washington de fondo, el
-// logo y el menu.
-export default function MemberHeader({ name }: { name: string }) {
+// Encabezado del area de miembros: el skyline de Washington de fondo (u otra
+// imagen, p. ej. la de un evento), el logo y el menu. Sin sesion (name null)
+// muestra los botones para entrar o hacerse miembro. children: contenido
+// sobre la imagen, debajo del menu (p. ej. el titulo de un evento).
+export default function MemberHeader({
+  name,
+  background,
+  children,
+  signInNext,
+}: {
+  name: string | null;
+  background?: ReactNode;
+  children?: ReactNode;
+  // A donde volver despues de iniciar sesion.
+  signInNext?: string;
+}) {
   return (
     <header className="relative isolate">
       <div aria-hidden="true" className="absolute inset-0 -z-10 overflow-hidden bg-[#141414]">
-        <Image
-          src="/images/member/skyline.jpg"
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-[30%_center]"
-        />
+        {background ?? (
+          <Image
+            src="/images/member/skyline.jpg"
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-[30%_center]"
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/10 to-black/35" />
       </div>
       {/* Logo pegado a la izquierda y menu a la derecha, con un margen corto. */}
@@ -130,9 +146,27 @@ export default function MemberHeader({ name }: { name: string }) {
             </span>
           ))}
           <ThemeToggle className="text-white" />
-          <UserMenu name={name} />
+          {name ? (
+            <UserMenu name={name} />
+          ) : (
+            <>
+              <Link
+                href={signInNext ? `/login?${new URLSearchParams({ next: signInNext })}` : "/login"}
+                className="whitespace-nowrap font-ui text-[14px] text-white hover:underline"
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/register"
+                className="whitespace-nowrap rounded-full bg-primario px-4 py-1.5 font-ui text-[14px] text-white transition-colors hover:bg-primario-hover"
+              >
+                Become a member
+              </Link>
+            </>
+          )}
         </nav>
       </div>
+      {children}
     </header>
   );
 }

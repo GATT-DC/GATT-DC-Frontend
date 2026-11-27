@@ -7,11 +7,11 @@ type Section = {
   href?: string;
 };
 
-// Carpetas del area de miembros. "My profile" y "Our blog" ya existen; las
-// demas se muestran como proximas.
+// Carpetas del area de miembros. "Community hub" aun no existe; se muestra
+// como proxima.
 const SECTIONS: Section[] = [
   { script: "My", word: "profile", color: "var(--color-naranja)", href: "/profile" },
-  { script: "Coming", word: "events", color: "var(--color-morado)" },
+  { script: "Coming", word: "events", color: "var(--color-morado)", href: "/events" },
   { script: "Our", word: "blog", color: "var(--color-amarillo)", href: "/blog" },
   { script: "Community", word: "hub", color: "var(--color-primario)" },
 ];

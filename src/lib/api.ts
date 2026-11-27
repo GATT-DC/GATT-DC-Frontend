@@ -246,3 +246,63 @@ export function updateAdminContribution(id: string, contributionId: string, cont
 export function deleteAdminContribution(id: string, contributionId: string) {
   return request<AdminUserDetail>(`${adminUser(id)}/contributions/${encodeURIComponent(contributionId)}`, { method: "DELETE" });
 }
+
+// ---- Eventos ----
+
+export type EventStatus = "draft" | "published" | "cancelled";
+
+// Lo que envia el editor de eventos. Fechas como ISO con zona.
+export type EventInput = {
+  // Admite *palabras* en cursiva.
+  name: string;
+  description: string;
+  venueName: string | null;
+  location: string | null;
+  meetingUrl: string | null;
+  startsAt: string;
+  endsAt: string | null;
+  capacity: number | null;
+  // Ruta relativa en S3 de la foto de cabecera.
+  imageUrl: string | null;
+  status: EventStatus;
+};
+
+export type GattEvent = Omit<EventInput, "meetingUrl"> & {
+  id: string;
+  slug: string;
+  // Solo llega para inscritos y admins.
+  meetingUrl: string | null;
+  isOnline: boolean;
+  registeredCount: number;
+  spotsLeft: number | null;
+  isRegistered: boolean;
+  isFavorite: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type EventAttendee = { userId: string; name: string; email: string; registeredAt: string };
+
+export function createEvent(event: EventInput) {
+  return request<GattEvent>("/events", { method: "POST", body: JSON.stringify(event) });
+}
+
+export function updateEvent(id: string, event: EventInput) {
+  return request<GattEvent>(`/events/${id}`, { method: "PUT", body: JSON.stringify(event) });
+}
+
+export function deleteEvent(id: string) {
+  return request<void>(`/events/${id}`, { method: "DELETE" });
+}
+
+export function registerForEvent(id: string) {
+  return request<void>(`/events/${id}/registration`, { method: "PUT" });
+}
+
+export function cancelEventRegistration(id: string) {
+  return request<void>(`/events/${id}/registration`, { method: "DELETE" });
+}
+
+export function setEventFavorite(id: string, favorite: boolean) {
+  return request<void>(`/events/${id}/favorite`, { method: favorite ? "PUT" : "DELETE" });
+}

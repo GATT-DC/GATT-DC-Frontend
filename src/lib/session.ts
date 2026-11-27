@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import type { AdminUserDetail, AdminUserPage, BlogPost, MembershipType, Profile } from "@/lib/api";
+import type { AdminUserDetail, AdminUserPage, BlogPost, EventAttendee, GattEvent, MembershipType, Profile } from "@/lib/api";
 import { BACKEND_URL } from "@/lib/backend";
 
 // Lectura de la sesion desde componentes de servidor: se le pregunta al
@@ -80,4 +80,31 @@ export async function getMembershipTypes(): Promise<MembershipType[]> {
   const response = await backendGet("/api/v1/admin/membership-types");
   if (!response.ok) throw new Error(`Could not load the membership types (${response.status})`);
   return (await response.json()) as MembershipType[];
+}
+
+// ---- Eventos ----
+
+// Listado de eventos (scope=upcoming|past, mine=registered|favorites,
+// includeDrafts=true para admins, limit). Con la sesion, cada evento dice si
+// ya se inscribio o lo marco como favorito.
+export async function getEvents(filters: Record<string, string> = {}): Promise<GattEvent[]> {
+  const query = new URLSearchParams(filters).toString();
+  const response = await backendGet(`/api/v1/events${query ? `?${query}` : ""}`);
+  if (!response.ok) throw new Error(`Could not load the events (${response.status})`);
+  return (await response.json()) as GattEvent[];
+}
+
+// Un evento por su slug, o null si no existe (o es un borrador y no es admin).
+export async function getEvent(slug: string): Promise<GattEvent | null> {
+  const response = await backendGet(`/api/v1/events/${encodeURIComponent(slug)}`);
+  if (response.status === 404) return null;
+  if (!response.ok) throw new Error(`Could not load the event (${response.status})`);
+  return (await response.json()) as GattEvent;
+}
+
+// Inscritos de un evento (solo admins).
+export async function getEventAttendees(id: string): Promise<EventAttendee[]> {
+  const response = await backendGet(`/api/v1/events/${encodeURIComponent(id)}/registrations`);
+  if (!response.ok) throw new Error(`Could not load the registrations (${response.status})`);
+  return (await response.json()) as EventAttendee[];
 }
