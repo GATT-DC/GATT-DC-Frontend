@@ -7,6 +7,8 @@ import { useState } from "react";
 import { ApiError, cancelEventRegistration, registerForEvent, setEventFavorite, type GattEvent } from "@/lib/api";
 import { eventPhase } from "@/lib/event-time";
 import { useConfirm } from "@/components/ui/ConfirmDialog";
+import InviteDialog from "@/components/events/InviteDialog";
+import { plainText } from "@/components/blog/ScriptText";
 
 function ArrowRight() {
   return (
@@ -34,6 +36,7 @@ export default function EventActions({ event, signedIn, isAdmin }: { event: Gatt
   const { confirm, dialog } = useConfirm();
   const [favorite, setFavorite] = useState(event.isFavorite);
   const [busy, setBusy] = useState(false);
+  const [inviting, setInviting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const here = `/events/${event.slug}`;
   const signIn = `/login?${new URLSearchParams({ next: here })}`;
@@ -118,6 +121,7 @@ export default function EventActions({ event, signedIn, isAdmin }: { event: Gatt
   return (
     <div>
       {dialog}
+      {inviting && <InviteDialog eventId={event.id} eventName={plainText(event.name)} onClose={() => setInviting(false)} />}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Link
           href={signedIn ? "/events" : "/#monthly-networking"}
@@ -129,6 +133,19 @@ export default function EventActions({ event, signedIn, isAdmin }: { event: Gatt
           </svg>
         </Link>
         <div className="flex flex-wrap items-center justify-end gap-3">
+          {isAdmin && event.status === "published" && eventPhase(event.startsAt, event.endsAt) !== "ended" && (
+            <button
+              type="button"
+              onClick={() => setInviting(true)}
+              className="inline-flex items-center gap-1.5 rounded-full border border-texto/30 px-4 py-1.5 font-ui text-[13px] text-texto hover:bg-texto/[0.06]"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
+                <rect x="3" y="5" width="18" height="14" rx="2" />
+                <path d="m3 7 9 6 9-6" />
+              </svg>
+              Send invitations
+            </button>
+          )}
           {isAdmin && (
             <Link href={`/events/${event.slug}/edit`} className="inline-flex items-center rounded-full bg-amarillo px-4 py-1.5 font-ui text-[13px] font-medium text-[#141414] hover:opacity-90">
               Edit

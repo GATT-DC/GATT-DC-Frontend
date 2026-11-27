@@ -306,3 +306,21 @@ export function cancelEventRegistration(id: string) {
 export function setEventFavorite(id: string, favorite: boolean) {
   return request<void>(`/events/${id}/favorite`, { method: favorite ? "PUT" : "DELETE" });
 }
+
+// ---- Correos ----
+
+export type EmailTemplateInfo = { name: string; subject: string; description: string };
+
+// Invitacion por correo a un evento (solo admins).
+export function sendEventInvitations(id: string, emails: string[], message: string | null) {
+  return request<{ sent: number }>(`/events/${id}/invitations`, {
+    method: "POST",
+    body: JSON.stringify({ emails, message }),
+  });
+}
+
+// Vista previa de una plantilla (la sirve el backend como HTML).
+export function emailPreviewUrl(name: string, params: Record<string, string> = {}) {
+  const query = new URLSearchParams(params).toString();
+  return `/api/v1/admin/email-templates/${name}/preview${query ? `?${query}` : ""}`;
+}

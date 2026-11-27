@@ -38,9 +38,17 @@ export default async function AdminUsersPage({ searchParams }: PageProps<"/admin
         <h1 className="font-heading text-[44px] font-normal leading-none text-texto lg:text-[56px]">
           <span className="font-script mr-4 text-[1.15em] text-verde">Manage</span>members
         </h1>
-        <p className="font-ui text-[14px] text-texto/60">
-          {result.total} {result.total === 1 ? "account" : "accounts"}
-        </p>
+        <div className="flex items-center gap-4">
+          <p className="font-ui text-[14px] text-texto/60">
+            {result.total} {result.total === 1 ? "account" : "accounts"}
+          </p>
+          <Link
+            href="/admin/emails"
+            className="inline-flex items-center gap-1.5 rounded-full border border-texto/30 px-4 py-1.5 font-ui text-[13px] text-texto hover:bg-texto/[0.06]"
+          >
+            Email templates
+          </Link>
+        </div>
       </div>
 
       <UserFilters values={values} types={types} />

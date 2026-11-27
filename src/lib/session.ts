@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import type { AdminUserDetail, AdminUserPage, BlogPost, EventAttendee, GattEvent, MembershipType, Profile } from "@/lib/api";
+import type { AdminUserDetail, AdminUserPage, BlogPost, EmailTemplateInfo, EventAttendee, GattEvent, MembershipType, Profile } from "@/lib/api";
 import { BACKEND_URL } from "@/lib/backend";
 
 // Lectura de la sesion desde componentes de servidor: se le pregunta al
@@ -107,4 +107,11 @@ export async function getEventAttendees(id: string): Promise<EventAttendee[]> {
   const response = await backendGet(`/api/v1/events/${encodeURIComponent(id)}/registrations`);
   if (!response.ok) throw new Error(`Could not load the registrations (${response.status})`);
   return (await response.json()) as EventAttendee[];
+}
+
+// Plantillas de correo (solo admins).
+export async function getEmailTemplates(): Promise<EmailTemplateInfo[]> {
+  const response = await backendGet("/api/v1/admin/email-templates");
+  if (!response.ok) throw new Error(`Could not load the email templates (${response.status})`);
+  return (await response.json()) as EmailTemplateInfo[];
 }
