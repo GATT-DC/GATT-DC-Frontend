@@ -34,14 +34,22 @@ function playSteps(
 }
 
 // Apertura desde las tarjetas de celular: en vez de sacar la carpeta del stack
-// y doblar su hoja (estilo desktop), la tarjeta crece hasta ocupar la vista
-// abierta, pasa a su color y luego entra el contenido. Al cerrar se encoge de
-// vuelta a la tarjeta.
+// y doblar su hoja (estilo desktop), la vista abierta aparece recortada con la
+// forma de la tarjeta y el recorte se abre hasta ocupar la pantalla; pasa a su
+// color y luego entra el contenido. Al cerrar se cierra de vuelta sobre la
+// tarjeta. Se recorta en vez de escalar para que nada se estire (la textura,
+// las esquinas) aunque la tarjeta sea mucho mas ancha que alta.
 export const CARD_EASE = "cubic-bezier(0.32, 0.72, 0, 1)";
 export const CARD_EXPAND_MS = 550;
 // Momento en que empieza a entrar el contenido.
 export const CARD_CONTENT_AT = 380;
 export const CARD_TOTAL_MS = 900;
+// Radio de las esquinas del cuerpo de la tarjeta (rounded-2xl; la de arriba a
+// la izquierda es recta porque ahi sale la pestaña).
+const CARD_RADIUS = "0px 16px 16px 16px";
+// La pestaña de cerrar sobresale a la derecha del panel: el recorte final la
+// deja ver.
+const TAB_OVERHANG = 64;
 
 export function cardExpandSteps({
   card,
@@ -65,18 +73,33 @@ export function cardExpandSteps({
 }): FolderStep[] {
   const first = card.getBoundingClientRect();
   const last = panel.getBoundingClientRect();
-  const tx = first.left - last.left;
-  const ty = first.top - last.top;
-  const scale = `scale(${first.width / last.width}, ${first.height / last.height})`;
+  // Recorte del panel que deja ver solo el rectangulo de la tarjeta.
+  const top = first.top - last.top;
+  const right = last.right - first.right;
+  const bottom = last.bottom - first.bottom;
+  const left = first.left - last.left;
   const fromColor = getComputedStyle(card).backgroundColor;
 
   return [
     {
       el: panel,
-      keyframes: [{ transform: `translate(${tx}px, ${ty}px) ${scale}` }, { transform: "none" }],
+      keyframes: [
+        { clipPath: `inset(${top}px ${right}px ${bottom}px ${left}px round ${CARD_RADIUS})` },
+        { clipPath: `inset(0px -${TAB_OVERHANG}px 0px 0px round 0px 0px 0px 0px)` },
+      ],
       start: 0,
       duration: CARD_EXPAND_MS,
       easing: CARD_EASE,
+    },
+    // La vista abierta aparece sobre la tarjeta con un fundido corto, asi las
+    // fotos de la tarjeta se desvanecen en vez de desaparecer de golpe (y al
+    // cerrar la tarjeta vuelve a verse por debajo).
+    {
+      el: panel,
+      keyframes: [{ opacity: 0 }, { opacity: 1 }],
+      start: 0,
+      duration: 160,
+      easing: "linear",
     },
     {
       el: fill,
@@ -84,7 +107,8 @@ export function cardExpandSteps({
       start: 0,
       duration: CARD_EXPAND_MS,
     },
-    // El contenido no se ve mientras el panel esta escalado (se veria aplastado).
+    // El contenido entra cuando el recorte ya casi ocupa la pantalla (antes solo
+    // se veria un pedazo de el).
     {
       el: content,
       keyframes: [{ opacity: 0 }, { opacity: 1 }],

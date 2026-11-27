@@ -8,7 +8,7 @@ const NOISE = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'
 // no aclare ni oscurezca el color, y `contrast` empareja lo marcada que se ve
 // cada una (el papel liso es muy sutil, las rayas no). `file` es el nombre
 // de la imagen si no coincide con el de la carpeta y `position` donde se
-// ancla (Our mission es una hoja de cuaderno con el margen a la izquierda).
+// ancla. Our mission usa la misma textura de About us.
 type Texture = {
   brightness: number;
   contrast: number;
@@ -20,13 +20,6 @@ type Texture = {
 const TEXTURES = {
   "about-us": { brightness: 0.54, contrast: 1.8, size: "500px auto" },
   "what-we-do": { brightness: 0.58, contrast: 1.1, size: "408px auto" },
-  mission: {
-    brightness: 0.52,
-    contrast: 2.5,
-    size: "1400px auto",
-    file: "mission-lined",
-    position: "left top",
-  },
   board: { brightness: 0.53, contrast: 1.7, size: "250px auto" },
   community: { brightness: 0.575, contrast: 1.3, size: "251px auto" },
 } satisfies Record<string, Texture>;

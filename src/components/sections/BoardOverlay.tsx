@@ -1,7 +1,16 @@
 "use client";
 
 import Image from "next/image";
+import { useLayoutEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
+import BoardMemberProfile from "@/components/sections/BoardMemberProfile";
+import { BOARD_PROFILES } from "@/components/sections/board-profiles";
+import {
+  MEMBER_PHOTO_SIZES,
+  flyFrom,
+  prefersReducedMotion,
+  riseIn,
+} from "@/components/sections/board-transition";
 import BackFolderOverlay, {
   type BackFolderOrigin,
 } from "@/components/layout/BackFolderOverlay";
@@ -82,10 +91,13 @@ function MemberCard({
   member,
   delay,
   advisor = false,
+  onSelect,
 }: {
   member: Member;
   delay: number;
   advisor?: boolean;
+  // Abre el perfil del miembro (solo si tiene).
+  onSelect?: () => void;
 }) {
   return (
     <li
@@ -94,9 +106,19 @@ function MemberCard({
       className="relative flex w-full flex-col items-center text-center lg:w-full"
     >
       <div
-        className="relative w-full rounded-[16px] p-[5px]"
+        className="group relative w-full rounded-[16px] p-[5px]"
         style={{ backgroundColor: member.frame }}
       >
+        {/* Toda la foto abre el perfil; el enlace de LinkedIn queda encima. */}
+        {onSelect && (
+          <button
+            type="button"
+            data-member={member.name}
+            onClick={onSelect}
+            aria-label={`Read more about ${member.name}`}
+            className="absolute inset-0 z-[1] rounded-[16px] transition-[box-shadow] hover:shadow-[0_0_0_3px_rgba(255,255,255,0.35)] focus-visible:shadow-[0_0_0_3px_rgba(255,255,255,0.6)] focus-visible:outline-none"
+          />
+        )}
         <div
           className="relative aspect-[984/1264] overflow-hidden rounded-[11px]"
           style={{ backgroundColor: member.frame }}
@@ -105,7 +127,7 @@ function MemberCard({
             src={`${IMAGE_DIR}/${member.photo}`}
             alt={`Portrait of ${member.name}`}
             fill
-            sizes="(min-width: 1024px) 20vw, 45vw"
+            sizes={MEMBER_PHOTO_SIZES}
             className="object-cover"
           />
         </div>
@@ -115,7 +137,7 @@ function MemberCard({
           target="_blank"
           rel="noopener noreferrer"
           aria-label={`LinkedIn de ${member.name}`}
-          className="absolute bottom-2 right-2 flex h-7 w-7 items-center justify-center rounded transition-transform hover:scale-110 focus-visible:scale-110"
+          className="absolute bottom-2 right-2 z-[2] flex h-7 w-7 items-center justify-center rounded transition-transform hover:scale-110 focus-visible:scale-110"
         >
           <Image
             src={`${IMAGE_DIR}/linkedin.png`}
@@ -139,6 +161,136 @@ function MemberCard({
         {member.role}
       </p>
     </li>
+  );
+}
+
+// Contenido de la carpeta: la junta y los asesores, o el perfil del miembro
+// elegido. Se desmonta al cerrar la carpeta, asi que al volver a abrirla
+// siempre arranca en la junta.
+function BoardContent() {
+  // Miembro abierto y donde estaba la foto de su tarjeta al tocarla.
+  const [selected, setSelected] = useState<{ member: Member; from: DOMRect | null } | null>(null);
+  // Miembro del que se volvio y donde estaba su foto en el perfil: la foto
+  // regresa a su tarjeta y la tarjeta recupera el foco.
+  const returnTo = useRef<{ name: string; from: DOMRect } | null>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const member = selected?.member;
+  const profile = member ? BOARD_PROFILES[member.name] : undefined;
+
+  // Marco de la foto de una tarjeta (el padre de su boton).
+  const cardFrame = (name: string) =>
+    gridRef.current?.querySelector<HTMLElement>(`[data-member="${CSS.escape(name)}"]`)
+      ?.parentElement ?? null;
+
+  // Al volver a la junta (antes de pintarla).
+  useLayoutEffect(() => {
+    const back = returnTo.current;
+    if (selected || !back) return;
+    returnTo.current = null;
+    const frame = gridRef.current?.querySelector<HTMLElement>(
+      `[data-member="${CSS.escape(back.name)}"]`,
+    )?.parentElement;
+    if (!frame) return;
+    frame.scrollIntoView({ block: "center" });
+    frame.querySelector<HTMLElement>("[data-member]")?.focus({ preventScroll: true });
+    if (prefersReducedMotion() || !gridRef.current) return;
+    flyFrom(frame, back.from);
+    const others = [...gridRef.current.querySelectorAll("[data-folder-enter]")].filter(
+      (el) => !el.contains(frame),
+    );
+    riseIn(others, 120, 25);
+  }, [selected]);
+
+  const select = (member: Member) =>
+    BOARD_PROFILES[member.name]
+      ? () =>
+          setSelected({
+            member,
+            from: cardFrame(member.name)?.getBoundingClientRect() ?? null,
+          })
+      : undefined;
+
+  if (member && profile) {
+    return (
+      <div className="relative px-6 py-10 sm:px-10 lg:px-[5%] lg:pb-16 lg:pt-14">
+        {/* El titulo de la carpeta sigue nombrando el dialogo. */}
+        <h2 id="board-title" className="sr-only">
+          The gatt Board
+        </h2>
+        <BoardMemberProfile
+          name={member.name}
+          photo={member.photo}
+          frame={member.frame}
+          linkedin={member.linkedin}
+          profile={profile}
+          fromRect={selected?.from ?? null}
+          onBack={(photoRect) => {
+            returnTo.current = { name: member.name, from: photoRect };
+            setSelected(null);
+          }}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div ref={gridRef} className="relative px-6 py-10 sm:px-10 lg:px-[5%] lg:pb-16 lg:pt-14">
+      <div style={{ "--gap": CARD_GAP } as CSSProperties}>
+        <div data-folder-enter="rise" className="text-center">
+          <h2
+            id="board-title"
+            className="font-heading text-[40px] font-normal leading-none text-white lg:text-[length:clamp(52px,5vw,80px)]"
+          >
+            The{" "}
+            <span className="font-script inline-block px-1 text-[1.25em] leading-[0.9]">
+              Gatt
+            </span>{" "}
+            Board
+          </h2>
+          <p className="font-serif text-[15px] font-light text-white lg:-mt-1 lg:text-[17px]">2026</p>
+        </div>
+
+        <ul className="mt-8 grid grid-cols-2 gap-x-5 gap-y-6 lg:mt-8 lg:grid-cols-4 lg:gap-x-[var(--gap)] lg:gap-y-8">
+          {BOARD.map((member, i) => (
+            <MemberCard
+              key={member.name}
+              member={member}
+              delay={80 + i * 60}
+              onSelect={select(member)}
+            />
+          ))}
+        </ul>
+
+        <hr
+          data-folder-enter="rise"
+          data-folder-delay={300}
+          className="mt-8 border-dashed border-white/25 lg:mt-12"
+        />
+
+        <h3
+          data-folder-enter="rise"
+          data-folder-delay={320}
+          className="font-heading mt-6 text-[22px] font-normal text-white lg:mt-10 lg:text-[28px]"
+        >
+          Advisors to the{" "}
+          <span className="font-script inline-block px-1 text-[1.3em] leading-none">
+            Board
+          </span>
+        </h3>
+
+        <ul className="mt-5 grid grid-cols-2 gap-x-5 gap-y-6 lg:mt-6 lg:grid-cols-4 lg:gap-x-[var(--gap)] lg:gap-y-8">
+          {ADVISORS.map((member, i) => (
+            <MemberCard
+              key={member.name}
+              member={member}
+              delay={380 + i * 60}
+              advisor
+              onSelect={select(member)}
+            />
+          ))}
+        </ul>
+      </div>
+    </div>
   );
 }
 
@@ -202,59 +354,7 @@ export default function BoardOverlay({
         </div>
       }
     >
-      <div className="relative px-6 py-10 sm:px-10 lg:px-[5%] lg:pb-16 lg:pt-14">
-        <div
-          style={{ "--gap": CARD_GAP } as CSSProperties}
-        >
-          <div data-folder-enter="rise" className="text-center">
-            <h2
-              id="board-title"
-              className="font-heading text-[40px] font-normal leading-none text-white lg:text-[length:clamp(52px,5vw,80px)]"
-            >
-              The{" "}
-              <span className="font-script inline-block px-1 text-[1.25em] leading-[0.9]">
-                Gatt
-              </span>{" "}
-              Board
-            </h2>
-            <p className="font-serif text-[15px] font-light text-white lg:-mt-1 lg:text-[17px]">2026</p>
-          </div>
-
-          <ul className="mt-8 grid grid-cols-2 gap-x-5 gap-y-6 lg:mt-8 lg:grid-cols-4 lg:gap-x-[var(--gap)] lg:gap-y-8">
-            {BOARD.map((member, i) => (
-              <MemberCard key={member.name} member={member} delay={80 + i * 60} />
-            ))}
-          </ul>
-
-          <hr
-            data-folder-enter="rise"
-            data-folder-delay={300}
-            className="mt-8 border-dashed border-white/25 lg:mt-12"
-          />
-
-          <h3
-            data-folder-enter="rise"
-            data-folder-delay={320}
-            className="font-heading mt-6 text-[22px] font-normal text-white lg:mt-10 lg:text-[28px]"
-          >
-            Advisors to the{" "}
-            <span className="font-script inline-block px-1 text-[1.3em] leading-none">
-              Board
-            </span>
-          </h3>
-
-          <ul className="mt-5 grid grid-cols-2 gap-x-5 gap-y-6 lg:mt-6 lg:grid-cols-4 lg:gap-x-[var(--gap)] lg:gap-y-8">
-            {ADVISORS.map((member, i) => (
-              <MemberCard
-                key={member.name}
-                member={member}
-                delay={380 + i * 60}
-                advisor
-              />
-            ))}
-          </ul>
-        </div>
-      </div>
+      <BoardContent />
     </BackFolderOverlay>
   );
 }

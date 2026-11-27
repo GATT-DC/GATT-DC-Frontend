@@ -53,10 +53,9 @@ export default function DiscoverCard({
   );
 
   return (
-    <article
-      // Mientras esta abierta, la vista abierta toma su lugar.
-      style={{ visibility: isOpen ? "hidden" : undefined }}
-    >
+    // Queda visible mientras esta abierta: la vista abierta aparece encima con un
+    // fundido y, al cerrarse, la tarjeta vuelve a verse por debajo sin saltos.
+    <article>
       <div className="pl-3">
         {onOpen ? (
           <button
@@ -89,7 +88,7 @@ export default function DiscoverCard({
             className={`absolute top-5 aspect-[4/5] w-[32%] overflow-hidden rounded-lg bg-black/20 shadow-md ${FAN[i + (leadPhoto ? 1 : 0)]}`}
           >
             <Image
-              src={`/images/landing/discover-gatt/${photo.src}`}
+              src={photo.src.startsWith("/") ? photo.src : `/images/landing/discover-gatt/${photo.src}`}
               alt={photo.alt}
               fill
               sizes="120px"
